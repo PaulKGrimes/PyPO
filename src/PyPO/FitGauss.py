@@ -44,8 +44,8 @@ def calcEstimates(x, y, area, field_norm):
     Amp = 1 #M0 * np.sqrt(a * b - c**2) * area[0,0]
     theta = 0.5 * np.arctan(2 * c / (a - b))
 
-    #if a-b > 0: # Not HW1 but the largest axis corresponds to theta.
-    #    theta += np.pi/2
+    if a-b > 0: # Not HW1 but the largest axis corresponds to theta.
+        theta += np.pi/2
     #if theta < 0:
     #    theta += np.pi
     
@@ -132,7 +132,6 @@ def fitGaussAbs(field, surfaceObject, thres, scale, ratio=1):
     x0, y0, xs, ys, theta = calcEstimates(x[_mask_f], y[_mask_f], area[_mask_f], fit_field[_mask_f])
 
     p0 = [x0, y0, xs, ys, theta, np.max(fit_field)]
-
 
     _ratio = ratio
     num = 0
