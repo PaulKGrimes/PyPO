@@ -847,6 +847,158 @@ void Plane_AoE(T *plane, U xu_lo, U xu_up, U yv_lo,
 }
 
 /**
+ * Generate surface grid on a xy grid from tabulated surface points.
+ *
+ * Generate a surface using an xy grid parametrization, by spline interpolating a set of 
+ * tabulated surface points. Also generates the normal vectors and area elements.
+ *      Applies specified transformations as well, if enabled.
+ *
+ * @param plane Pointer to reflcontainer or reflcontainerf object.
+ * @param xu_lo Lower limit on x co-ordinate, double/float.
+ * @param xu_up Upper limit on x co-ordinate, double/float.
+ * @param yv_lo Lower limit on y co-ordinate, double/float.
+ * @param yv_up Upper limit on y co-ordinate, double/float.
+ * @param ncx Number of cells along x-axis.
+ * @param ncy Number of cells along y-axis.
+ * @param nfac Flip normal vectors.
+ * @param mat Array of 16 double/float, transformation matrix.
+ * @param transform Whether or not to apply transformation to reflector.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ */
+template<typename T, typename U>
+void Surface_xy(T *surf, U xu_lo, U xu_up, U yv_lo,
+              U yv_up, int ncx, int ncy, int nfac,
+              U mat[16], bool transform)
+{
+    U dx = (xu_up - xu_lo) / (ncx - 1);
+    U dy = (yv_up - yv_lo) / (ncy - 1);
+
+    U x;
+    U y;
+
+    U norm;
+
+    Utils<U> ut;
+
+
+    std::array<U, 3> inp, out;
+
+    for (int i=0; i < ncx; i++)
+    {
+        x = i * dx + xu_lo;
+        for (int j=0; j < ncy; j++)
+        {
+            y = j * dy + yv_lo;
+            int idx = i*ncy + j;
+
+            surf->x[idx] = x;
+            surf->y[idx] = y;
+            surf->z[idx] = interp(x, y);
+
+            surf->nx[idx] = nx_interp(x, y);
+            surf->ny[idx] = ny_interp(x, y);
+            surf->nz[idx] = nz_interp(x, y);
+
+            surf->area[idx] = area_interp(x, y);
+
+            if (transform)
+            {
+                transformGrids<T, U>(surf, idx, inp, out, &ut, mat);
+            }
+        }
+    }
+}
+
+/**
+ * Generate surface grid on a uv grid from tabulated surface points.
+ *
+ * Generate a surface using an uv grid parametrization, by spline interpolating a set of 
+ * tabulated surface points. Also generates the normal vectors and area elements.
+ *      Applies specified transformations as well, if enabled.
+ *
+ * @param plane Pointer to reflcontainer or reflcontainerf object.
+ * @param xu_lo Lower limit on x co-ordinate, double/float.
+ * @param xu_up Upper limit on x co-ordinate, double/float.
+ * @param yv_lo Lower limit on y co-ordinate, double/float.
+ * @param yv_up Upper limit on y co-ordinate, double/float.
+ * @param xcenter Center x co-ordinate of xy region.
+ * @param ycenter Center y co-ordinate of xy region.
+ * @param ecc_uv Eccentricity of uv-generated ellipse in xy-grid, double/float.
+ * @param rot_uv Position angle of uv-generated ellipse in xy-grid, double/float.
+ * @param ncx Number of cells along x-axis.
+ * @param ncy Number of cells along y-axis.
+ * @param nfac Flip normal vectors.
+ * @param mat Array of 16 double/float, transformation matrix.
+ * @param transform Whether or not to apply transformation to reflector.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ */
+template<typename T, typename U>
+void Surface_uv(T *plane, U xu_lo, U xu_up, U yv_lo,
+              U yv_up, U xcenter, U ycenter, U ecc_uv, U rot_uv, int ncx, int ncy, int nfac,
+              U mat[16], bool transform)
+{
+
+
+    U u, du0, duv;
+    U v, dv;
+    U x, y;
+
+    U majmin = sqrt(1 - ecc_uv*ecc_uv);
+    
+    du0 = (xu_up - xu_lo) / (ncx - 1);
+    /* For v (polar angle) range, drop the -1, so that the upper value is excluded 
+    This prevents both the 0 deg and 360 deg being included.  For limits less than
+    360 deg (e.g. 180 deg) then we should still do this, as it would allow future
+    use of symmetry to speed up calculations. */
+    dv = (yv_up - yv_lo) / (ncy);
+
+    U ecc_fac;
+
+    Utils<U> ut;
+
+    std::array<U, 3> inp, out;
+    
+    int idx;
+
+    for (int i=0; i < ncx; i++)
+    {        
+        for (int j=0; j < ncy; j++)
+        {
+            v = (j * dv + yv_lo) * M_PI/180;
+            ecc_fac = 1 / sqrt(1 - (ecc_uv*cos(v))*(ecc_uv*cos(v))); //consider moving into separate loop + array alloc
+            duv = du0 * majmin * ecc_fac; 
+            u = i*duv + xu_lo*ecc_fac;
+            
+            idx = i*ncy + j;
+            
+            // Calculate co-ordinate of ellipse in rest frame
+            x = u*cos(v)*cos(rot_uv) - u*sin(v)*sin(rot_uv) + xcenter;
+            y = u*cos(v)*sin(rot_uv) + u*sin(v)*cos(rot_uv) + ycenter;
+
+            // Add center offset to xy grids
+            plane->x[idx] = x;
+            plane->y[idx] = y;
+            plane->z[idx] = 0;
+
+            plane->nx[idx] = 0;
+            plane->ny[idx] = 0;
+            plane->nz[idx] = nfac * 1;
+
+            // Calculate du along value of v, dv unchanged.
+            plane->area[idx] = u * duv * dv;            
+            if (transform)
+            {
+                transformGrids<T, U>(plane, idx, inp, out, &ut, mat);
+            }
+        }
+    }
+}
+
+/**
  * Generate reflector/far-field grids.
  * 
  * Generate x, y, z grids and corresponding normal vectors nx, ny, nz. Also generates area elements.

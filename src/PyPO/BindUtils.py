@@ -9,6 +9,7 @@ import ctypes
 import numpy as np
 
 import PyPO.PyPOTypes as PTypes
+import PyPO.Structs as PStructs
 import PyPO.Config as Config
 
 def sfieldConv(field, c_field, size, ct_t):
@@ -548,6 +549,53 @@ def creflToObj(res, shape, np_t):
     area = np.ctypeslib.as_array(res.area, shape=shape).astype(np_t)
     out = PTypes.reflGrids(x, y, z, nx, ny, nz, area)
     return out
+
+def reflObjTocrefl(reflGrids, ct_t=ctypes.c_double):
+    """!
+    Convert a PyPO grids object to a C reflcontainer struct
+
+    @param reflGrids A PyPO reflectorGrids object.
+    @param shape Shape of the reflector grid.
+    @param c_t Type of field in reflGrids
+
+    @returns out A reflcontainer or reflcontainerf struct.
+
+    @see reflcontainer
+    @see reflcontainerf
+    @see reflGrids 
+    """
+    size = reflGrids.size
+
+    out = PStructs.reflcontainer()
+    
+    out.size = ctypes.c_int(size)
+
+    out.x = (ct_t * size)(*reflGrids.x.ravel().tolist())
+    out.y = (ct_t * size)(*reflGrids.y.ravel().tolist())
+    out.z = (ct_t * size)(*reflGrids.z.ravel().tolist())
+    
+    out.nx = (ct_t * size)(*reflGrids.nx.ravel().tolist())
+    out.ny = (ct_t * size)(*reflGrids.ny.ravel().tolist())
+    out.nz = (ct_t * size)(*reflGrids.nz.ravel().tolist())
+    
+    out.area = (ct_t*size)(*reflGrids.area.ravel().tolist())
+    
+    return out
+
+def reflObjTocreflf(reflGrids):
+    """!
+    Convert a PyPO grids object to a C reflcontainerf grids struct
+
+    @param reflGrids A PyPO reflectorGrids object.
+    @param shape Shape of the reflector grid.
+
+    @returns out A reflcontainerf struct.
+
+    @see reflcontainer
+    @see reflcontainerf
+    @see reflGrids 
+    """
+    return reflObjTocrefl(reflGrids, ct_t=ctypes.c_float)
 
 def frameToObj(res, np_t, shape):
     """!
