@@ -276,11 +276,9 @@ __global__ void GpropagateBeam_0_PEC(float *d_xs, float *d_ys, float *d_zs,
         d_Jyt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[1]);
         d_Jzt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[2]);
 
-        ext(norms, d_ei, d_jm);
-        
-        d_Mxt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[0]);
-        d_Myt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[1]);
-        d_Mzt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[2]);
+        d_Mxt[idx] = make_cuFloatComplex(0, 0);
+        d_Myt[idx] = make_cuFloatComplex(0, 0);
+        d_Mzt[idx] = make_cuFloatComplex(0, 0);
     }
 }
 
@@ -526,9 +524,9 @@ __global__ void GpropagateBeam_2_PEC(float *d_xs, float *d_ys, float *d_zs,
 
         ext(norms, d_ei, d_jm);
         
-        d_Mxt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[0]);
-        d_Myt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[1]);
-        d_Mzt[idx] = cuCmulf(make_cuFloatComplex(-2., 0), d_jm[2]);
+        d_Mxt[idx] = make_cuFloatComplex(0, 0);
+        d_Myt[idx] = make_cuFloatComplex(0, 0);
+        d_Mzt[idx] = make_cuFloatComplex(0, 0);
     }
 }
 

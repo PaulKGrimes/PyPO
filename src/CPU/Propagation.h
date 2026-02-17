@@ -258,15 +258,13 @@ void Propagation<T,U, V, W>::propagateBeam_JM_PEC(int start, int stop,
         res->i1y[i] = 2*jt[1].imag();
         res->i1z[i] = 2*jt[2].imag();
 
-        ut.ext(norms, beam_e_h[0], mt);
+        res->r2x[i] = 0;
+        res->r2y[i] = 0;
+        res->r2z[i] = 0;
 
-        res->r2x[i] = -2*mt[0].real();
-        res->r2y[i] = -2*mt[1].real();
-        res->r2z[i] = -2*mt[2].real();
-
-        res->i2x[i] = -2*mt[0].imag();
-        res->i2y[i] = -2*mt[1].imag();
-        res->i2z[i] = -2*mt[2].imag();
+        res->i2x[i] = 0;
+        res->i2y[i] = 0;
+        res->i2z[i] = 0;
     }
 }
 
@@ -482,16 +480,15 @@ void Propagation<T,U, V, W>::propagateBeam_JMEH_PEC(int start, int stop,
         res->i1y[i] = 2*jt[1].imag();
         res->i1z[i] = 2*jt[2].imag();
 
-        // J_m = -2 n ^ E_inc
-        ut.ext(norms, beam_e_h[0], mt);
+        // J_m = 0
 
-        res->r2x[i] = -2*mt[0].real();
-        res->r2y[i] = -2*mt[1].real();
-        res->r2z[i] = -2*mt[2].real();
+        res->r2x[i] = 0;
+        res->r2y[i] = 0;
+        res->r2z[i] = 0;
 
-        res->i2x[i] = -2*mt[0].imag();
-        res->i2y[i] = -2*mt[1].imag();
-        res->i2z[i] = -2*mt[2].imag();
+        res->i2x[i] = 0;
+        res->i2y[i] = 0;
+        res->i2z[i] = 0;
     }
 }
 
