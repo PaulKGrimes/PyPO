@@ -34,13 +34,15 @@ __constant__ int g_t;               // Gridsize on target
      dim3 nrb(nBlocks); dim3 nrt(nThreads);
 
      float PIf = 3.1415926; /* pi */
-     float C_L = 2.9979246e11; // mm s^-1
-     float MU_0 = 1.256637e-3; // kg mm s^-2 A^-2
+     float C_L = 2.9979246e8; // mm s^-1
+     float MU_0 = 1.256637e-6; // kg mm s^-2 A^-2
      float EPS_VAC = 1 / (MU_0 * C_L*C_L);
-     float ZETA_0_INV = 1 / (C_L * MU_0);
-
-     // Calculate permittivity of target
      float EPS = EPS_VAC * epsilon;
+     float ZETA = sqrt( MU_0 / EPS);
+     float ZETA_INV = 1 / ZETA;
+
+     float prefactor = k*k/(4*Pif)
+
 
      // Fill ID matrix
      float _eye[3][3] = {};
@@ -49,16 +51,19 @@ __constant__ int g_t;               // Gridsize on target
      _eye[2][2] = 1.;
      
      // Pack constant array
-     cuFloatComplex _con[CSIZE] = {make_cuFloatComplex(k, 0.),
-                                     make_cuFloatComplex(EPS, 0.),
-                                     make_cuFloatComplex(MU_0, 0.),
-                                     make_cuFloatComplex(ZETA_0_INV, 0.),
-                                     make_cuFloatComplex(PIf, 0.),
-                                     make_cuFloatComplex(C_L, 0.),
-                                     make_cuFloatComplex(t_direction, 0.),
-                                     make_cuFloatComplex(0., 1.),
-                                     make_cuFloatComplex(0., 0.),
-                                     make_cuFloatComplex(4., 0.)};
+     cuFloatComplex _con[CSIZE] = {make_cuFloatComplex(k, 0.),              // _con[0]
+                                     make_cuFloatComplex(prefactor,0),      // _con[1]
+                                     make_cuFloatComplex(EPS, 0.),          // _con[2]
+                                     make_cuFloatComplex(MU_0, 0.),         // _con[3]
+                                     make_cuFloatComplex(ZETA, 0.),         // _con[4]
+                                     make_cuFloatComplex(ZETA_INV, 0.),     // _con[5]
+                                     make_cuFloatComplex(PIf, 0.),          // _con[6]
+                                     make_cuFloatComplex(C_L, 0.),          // _con[7]
+                                     make_cuFloatComplex(t_direction, 0.),  // _con[8]
+                                     make_cuFloatComplex(0., 1.),           // _con[9]
+                                     make_cuFloatComplex(0., 0.),           // _con[10]
+                                     make_cuFloatComplex(1., 0.)};          // _con[11]
+
      
      // Copy constant array to Device constant memory
      gpuErrchk( cudaMemcpyToSymbol(g_s, &gs, sizeof(int)) );
@@ -101,36 +106,38 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     cuFloatComplex (&d_ei)[3], cuFloatComplex (&d_hi)[3])
 {
     // Scalars (float & complex float)
-    float r;                           // Distance between source and target points
-    float r_inv;                       // 1 / r
-    cuFloatComplex omega;                       // Angular frequency of field
-    cuFloatComplex Green;         // Container for Green's function
-    cuFloatComplex r_in_s;        // Container for inner products between wavevctor and currents
-    cuFloatComplex rc;
+    float R;                            // Distance between source and target points
+    float R_inv;                        // 1 / R
+    float kR;                           // k*R
+    float kR_inv;                       // inverse of kR
+    cuFloatComplex Green;               // Container for Green's function
+    cuFloatComplex js_dot_R;            // Container for inner products between wavevctor and electric currents
+    cuFloatComplex ms_dot_R;            // Container for inner products between wavevctor and magnetics currents
+
+    cuFloatComplex kR_inv_sum1;     // Container for the first common complex sum of 1/kR powers
+    cuFloatComplex kR_inv_sum2;     // Container for the second common complex sum of 1/kR powers
+    cuFloatComplex kR_inv_sum3;     // Container for the third common complex sum of 1/kR powers
 
     // Arrays of floats
     float source_point[3]; // Container for xyz co-ordinates
     float source_norm[3];  // Container for xyz source normals
-    float norm_dot_k_hat;  // Source normal dotted with wavevector direction
-    float r_vec[3];        // Distance vector between source and target points
-    float k_hat[3];        // Unit wavevctor
-    float k_arr[3];        // Wavevector
+    float norm_dot_R_hat;  // Source normal dotted with wavevector direction
+    float R_vec[3];        // Distance vector between source and target points
+    float R_hat[3];        // Unit distance vector
 
     // Arrays of complex floats
-    cuFloatComplex e_field[3] = {con[8], con[8], con[8]}; // Electric field on target
-    cuFloatComplex h_field[3] = {con[8], con[8], con[8]}; // Magnetic field on target
+    cuFloatComplex e_field[3] = {con[10], con[10], con[10]}; // Electric field on target
+    cuFloatComplex h_field[3] = {con[10], con[10], con[10]}; // Magnetic field on target
     cuFloatComplex js[3];             // Electric current at source point
     cuFloatComplex ms[3];             // Magnetic current at source point
-    cuFloatComplex e_vec_thing[3];    // Electric current contribution to e-field
-    cuFloatComplex h_vec_thing[3];    // Magnetic current contribution to h-field
-    cuFloatComplex k_out_ms[3];       // Outer product between k and ms
-    cuFloatComplex k_out_js[3];       // Outer product between k and js
+    cuFloatComplex js_dot_R_R[3];     // Electric current contribution to e-field
+    cuFloatComplex ms_dot_R_R[3];    // Magnetic current contribution to h-field
+    cuFloatComplex ms_cross_R[3];     // Outer product between ms and R_hat
+    cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat
     cuFloatComplex temp[3];           // Temporary container for intermediate values
 
     //e_field = {con[8], con[8], con[8]};
     //h_field = {con[8], con[8], con[8]};
-
-    omega = cuCmulf(con[5], con[0]); // C_L * k
 
     for(int i=0; i<g_s; i++)
 
@@ -152,42 +159,44 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         source_norm[2] = d_nzs[i];
 
 
-        diff(point, source_point, r_vec);
-        abs(r_vec, r);
+        diff(point, source_point, R_vec);
+        abs(R_vec, R);
 
-        rc = make_cuFloatComplex(r, 0.);
-        r_inv = 1 / r;
+        R_inv = 1/R;
 
-        s_mult(r_vec, r_inv, k_hat);
+        s_mult(R_vec, R_inv, R_hat);
 
-        dot(source_norm, k_hat, norm_dot_k_hat);
-        if ((norm_dot_k_hat < 0) && (con[6].x < 0)) {continue;}
+        dot(source_norm, R_hat, norm_dot_R_hat);
+        if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {continue;}
 
-        s_mult(k_hat, con[0].x, k_arr);
+        kR = con[0].x * R;
+        kR_inv = 1.0f/kR;
 
+        // Calculate the complex sums that appear in the integral
+        kR_inv_sum1 = make_cuFloatComplex(-kR_inv*kR_inv, kR_inv*(kR_inv*kR_inv - 1));
+        kR_inv_sum2 = make_cuFloatComplex(3*kR_inv*kR_inv, kR_inv*(1 - 3*kR_inv*kR_inv));
+        kR_inv_sum3 = make_cuFloatComplex(kR_inv*kR_inv, kR_inv);
+
+        // Vector calculatoins
         // e-field
-        dot(k_hat, js, r_in_s);
-        s_mult(k_hat, r_in_s, temp);
-        diff(js, temp, e_vec_thing);
-
-        ext(k_arr, ms, k_out_ms);
+        ut.dot(js, R_hat, js_dot_R);
+        ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
+        ut.ext(ms, R_hat, ms_cross_R);
 
         // h-field
-        dot(k_hat, ms, r_in_s);
-        s_mult(k_hat, r_in_s, temp);
-        diff(ms, temp, h_vec_thing);
-
-        ext(k_arr, js, k_out_js);
+        ut.dot(js, R_hat, ms_dot_R);
+        ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
+        ut.ext(js, R_hat, js_cross_R);
 
         cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
 
-        Green = cuCmulf(cuCdivf(expCo(cuCmulf(con[6], cuCmulf(con[7], cuCmulf(con[0], rc)))),
-                (cuCmulf(con[9], cuCmulf(con[4], rc)))), cuCmulf(d_Ac, con[7]));
+        // TODO
+        Green = cuCmulf(cuCmulf(con[1], cuCexpf(make_cuFloatComplex(0, -kR))), d_Ac);
 
         for( int n=0; n<3; n++)
         {
-            e_field[n] = cuCsubf(e_field[n], cuCmulf(cuCsubf(cuCmulf(omega, cuCmulf(con[2], e_vec_thing[n])), k_out_ms[n]), Green));
-            h_field[n] = cuCsubf(h_field[n], cuCmulf(cuCaddf(cuCmulf(omega, cuCmulf(con[1], h_vec_thing[n])), k_out_js[n]), Green));
+            e_field[n] = cuCmulf(cuCmulf(con[5], cuCsubf(cuCaddf(cuCmulf(js[n], kR_inv_sum1), cuCmulf(js_dot_R_R[n], kR_inv_sum2)), cuCmulf(ms_cross_R[n], kR_inv_sum3))), Green);
+            h_field[n] = cuCmulf(cuCmulf(con[6], cuCsubf(cuCaddf(cuCmulf(ms[n], kR_inv_sum1), cuCmulf(ms_dot_R_R[n], kR_inv_sum2)), cuCmulf(js_cross_R[n], kR_inv_sum3))), Green);
         }
     }
 
