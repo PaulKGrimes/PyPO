@@ -191,6 +191,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
 
         dot(source_norm, R_hat, norm_dot_R_hat);
         //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
+        
         if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
             shaded_points++;
             continue;}
