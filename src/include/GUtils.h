@@ -534,7 +534,7 @@ __device__ __inline__ void invmatVec4(float (&mat)[16], float (&cv1)[3], float (
  *
  * @return res cuFloatComplex number.
  */
-__device__ __inline__ cuFloatComplex cuCexpS(cuFloatComplex z)
+__device__ __inline__ cuFloatComplex cuCexpf(cuFloatComplex z)
 {
     cuFloatComplex res;
     float ys, yc;
@@ -639,8 +639,8 @@ __device__ __inline__ cuFloatComplex cuCmulSf(float a, cuFloatComplex b)
 __device__ __inline__ cuFloatComplex cuCdivSf(cuFloatComplex a, float b)
 {
     cuFloatComplex res;
-    res.x = a.x/s;
-    res.y = b.y/s;
+    res.x = a.x/b;
+    res.y = a.y/b;
 
     return res;
 }
@@ -655,7 +655,7 @@ __device__ __inline__ cuFloatComplex cuCdivSf(float a, cuFloatComplex b)
     cuFloatComplex ac, res;
     ac = make_cuFloatComplex(a, 0.);
 
-    res = cuCdivf(a, b);
+    res = cuCdivf(ac, b);
 
     return res;
 }

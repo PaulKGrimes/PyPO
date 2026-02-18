@@ -30,52 +30,63 @@ __constant__ int g_t;               // Gridsize on target
  */
  __host__ std::array<dim3, 2> initCUDA(float k, float epsilon, int gt, int gs, float t_direction, int nBlocks, int nThreads)
  {
-     // Calculate nr of blocks per grid and nr of threads per block
-     dim3 nrb(nBlocks); dim3 nrt(nThreads);
+    // Calculate nr of blocks per grid and nr of threads per block
+    dim3 nrb(nBlocks); dim3 nrt(nThreads);
 
-     float PIf = 3.1415926; /* pi */
-     float C_L = 2.9979246e8; // mm s^-1
-     float MU_0 = 1.256637e-6; // kg mm s^-2 A^-2
-     float EPS_VAC = 1 / (MU_0 * C_L*C_L);
-     float EPS = EPS_VAC * epsilon;
-     float ZETA = sqrt( MU_0 / EPS);
-     float ZETA_INV = 1 / ZETA;
+    float PIf = 3.1415926; /* pi */
+    float C_L = 2.9979246e8; // mm s^-1
+    float MU_0 = 1.256637e-6; // kg mm s^-2 A^-2
+    float EPS_VAC = 1 / (MU_0 * C_L*C_L);
+    float EPS = EPS_VAC * epsilon;
+    float ZETA = sqrt( MU_0 / EPS);
+    float ZETA_INV = 1 / ZETA;
 
-     float prefactor = k*k/(4*Pif)
+    float prefactor = k*k/(4*PIf);
+
+    printf("PIf         : %.16g\n", PIf);
+    printf("C_L         : %.16g\n", C_L);
+    printf("MU_0        : %.16g\n", MU_0);
+    printf("EPS_VAC     : %.16g\n", EPS_VAC);
+    printf("EPS         : %.16g\n", EPS);
+    printf("ZETA        : %.16g\n", ZETA);
+    printf("ZETA_INV    : %.16g\n", ZETA_INV);
+    
+    printf("k           : %.16g\n", k);
+    printf("prefactor   : %.16g\n", prefactor);
 
 
-     // Fill ID matrix
-     float _eye[3][3] = {};
-     _eye[0][0] = 1.;
-     _eye[1][1] = 1.;
-     _eye[2][2] = 1.;
-     
-     // Pack constant array
-     cuFloatComplex _con[CSIZE] = {make_cuFloatComplex(k, 0.),              // _con[0]
-                                     make_cuFloatComplex(prefactor,0),      // _con[1]
-                                     make_cuFloatComplex(EPS, 0.),          // _con[2]
-                                     make_cuFloatComplex(MU_0, 0.),         // _con[3]
-                                     make_cuFloatComplex(ZETA, 0.),         // _con[4]
-                                     make_cuFloatComplex(ZETA_INV, 0.),     // _con[5]
-                                     make_cuFloatComplex(PIf, 0.),          // _con[6]
-                                     make_cuFloatComplex(C_L, 0.),          // _con[7]
-                                     make_cuFloatComplex(t_direction, 0.),  // _con[8]
-                                     make_cuFloatComplex(0., 1.),           // _con[9]
-                                     make_cuFloatComplex(0., 0.),           // _con[10]
-                                     make_cuFloatComplex(1., 0.)};          // _con[11]
+    // Fill ID matrix
+    float _eye[3][3] = {};
+    _eye[0][0] = 1.;
+    _eye[1][1] = 1.;
+    _eye[2][2] = 1.;
+    
+    // Pack constant array
+    cuFloatComplex _con[CSIZE] = {make_cuFloatComplex(k, 0.),              // _con[0]
+                                    make_cuFloatComplex(prefactor,0),      // _con[1]
+                                    make_cuFloatComplex(EPS, 0.),          // _con[2]
+                                    make_cuFloatComplex(MU_0, 0.),         // _con[3]
+                                    make_cuFloatComplex(ZETA, 0.),         // _con[4]
+                                    make_cuFloatComplex(ZETA_INV, 0.),     // _con[5]
+                                    make_cuFloatComplex(PIf, 0.),          // _con[6]
+                                    make_cuFloatComplex(C_L, 0.),          // _con[7]
+                                    make_cuFloatComplex(t_direction, 0.),  // _con[8]
+                                    make_cuFloatComplex(0., 1.),           // _con[9]
+                                    make_cuFloatComplex(0., 0.),           // _con[10]
+                                    make_cuFloatComplex(1., 0.)};          // _con[11]
 
-     
-     // Copy constant array to Device constant memory
-     gpuErrchk( cudaMemcpyToSymbol(g_s, &gs, sizeof(int)) );
-     gpuErrchk( cudaMemcpyToSymbol(g_t, &gt, sizeof(int)) );
-     gpuErrchk( cudaMemcpyToSymbol(eye, &_eye, sizeof(_eye)) );
-     gpuErrchk( cudaMemcpyToSymbol(con, &_con, CSIZE * sizeof(cuFloatComplex)) );
+    
+    // Copy constant array to Device constant memory
+    gpuErrchk( cudaMemcpyToSymbol(g_s, &gs, sizeof(int)) );
+    gpuErrchk( cudaMemcpyToSymbol(g_t, &gt, sizeof(int)) );
+    gpuErrchk( cudaMemcpyToSymbol(eye, &_eye, sizeof(_eye)) );
+    gpuErrchk( cudaMemcpyToSymbol(con, &_con, CSIZE * sizeof(cuFloatComplex)) );
 
-     std::array<dim3, 2> BT;
-     BT[0] = nrb;
-     BT[1] = nrt;
+    std::array<dim3, 2> BT;
+    BT[0] = nrb;
+    BT[1] = nrt;
 
-     return BT;
+    return BT;
  }
 
 /**
@@ -105,6 +116,9 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     float (&point)[3], float *d_A,
                     cuFloatComplex (&d_ei)[3], cuFloatComplex (&d_hi)[3])
 {
+    // Scalar ints
+    int shaded_points;
+
     // Scalars (float & complex float)
     float R;                            // Distance between source and target points
     float R_inv;                        // 1 / R
@@ -134,10 +148,13 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
     cuFloatComplex ms_dot_R_R[3];    // Magnetic current contribution to h-field
     cuFloatComplex ms_cross_R[3];     // Outer product between ms and R_hat
     cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat
-    cuFloatComplex temp[3];           // Temporary container for intermediate values
+    cuFloatComplex e_temp[3];           // Temporary container for intermediate values
+    cuFloatComplex h_temp[3];           // Temporary container for intermediate values
 
     //e_field = {con[8], con[8], con[8]};
     //h_field = {con[8], con[8], con[8]};
+
+    shaded_points = 0;
 
     for(int i=0; i<g_s; i++)
 
@@ -150,6 +167,9 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         ms[1] = d_My[i];
         ms[2] = d_Mz[i];
 
+        //printf("ms      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms[0].x, ms[0].y, ms[1].x, ms[1].y, ms[2].x, ms[2].y);
+
+
         source_point[0] = d_xs[i];
         source_point[1] = d_ys[i];
         source_point[2] = d_zs[i];
@@ -160,45 +180,78 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
 
 
         diff(point, source_point, R_vec);
-        abs(R_vec, R);
+        //printf("R_vec               : (%.16g, %.16g, %.16g)\n", R_vec[0], R_vec[1], R_vec[2]);
 
+        abs(R_vec, R);
+        
         R_inv = 1/R;
 
         s_mult(R_vec, R_inv, R_hat);
+        //printf("R_hat               : (%.16g, %.16g, %.16g)\n", R_hat[0], R_hat[1], R_hat[2]);
 
         dot(source_norm, R_hat, norm_dot_R_hat);
-        if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {continue;}
+        //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
+        if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
+            shaded_points++;
+            continue;}
 
         kR = con[0].x * R;
+        //printf("kR                  : %.16g\n", kR);
         kR_inv = 1.0f/kR;
+        //printf("kR_inv              : %.16g\n", kR_inv);
 
         // Calculate the complex sums that appear in the integral
         kR_inv_sum1 = make_cuFloatComplex(-kR_inv*kR_inv, kR_inv*(kR_inv*kR_inv - 1));
         kR_inv_sum2 = make_cuFloatComplex(3*kR_inv*kR_inv, kR_inv*(1 - 3*kR_inv*kR_inv));
         kR_inv_sum3 = make_cuFloatComplex(kR_inv*kR_inv, kR_inv);
 
+        //printf("kR_inv_sum1         : %.16g+%.16gi\n", kR_inv_sum1.x, kR_inv_sum1.y);
+        //printf("kR_inv_sum2         : %.16g+%.16gi\n", kR_inv_sum2.x, kR_inv_sum2.y);
+        //printf("kR_inv_sum3         : %.16g+%.16gi\n", kR_inv_sum3.x, kR_inv_sum3.y);
+
         // Vector calculatoins
         // e-field
-        ut.dot(js, R_hat, js_dot_R);
-        ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
-        ut.ext(ms, R_hat, ms_cross_R);
+        dot(js, R_hat, js_dot_R);
+        //printf("js_dot_R         : %.16g+%.16gi\n", js_dot_R.x, js_dot_R.y);
+        
+        s_mult(R_hat, js_dot_R, js_dot_R_R);
+        //printf("js_dot_R_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_dot_R_R[0].x, js_dot_R_R[0].y, js_dot_R_R[1].x, js_dot_R_R[1].y, js_dot_R_R[2].x, js_dot_R_R[2].y);
+
+        ext(ms, R_hat, ms_cross_R);
+        //printf("ms_cross_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_cross_R[0].x, ms_cross_R[0].y, ms_cross_R[1].x, ms_cross_R[1].y, ms_cross_R[2].x, ms_cross_R[2].y);
+
 
         // h-field
-        ut.dot(js, R_hat, ms_dot_R);
-        ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
-        ut.ext(js, R_hat, js_cross_R);
+        dot(ms, R_hat, ms_dot_R);
+        //printf("ms_dot_R        : %.16g+%.16gi\n", ms_dot_R.x, ms_dot_R.y);
+        
+        s_mult(R_hat, ms_dot_R, ms_dot_R_R);
+        //printf("ms_dot_R_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_dot_R_R[0].x, ms_dot_R_R[0].y, ms_dot_R_R[1].x, ms_dot_R_R[1].y, ms_dot_R_R[2].x, ms_dot_R_R[2].y);
+
+        ext(js, R_hat, js_cross_R);
+        //printf("js_cross_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_cross_R[0].x, js_cross_R[0].y, js_cross_R[1].x, js_cross_R[1].y, js_cross_R[2].x, js_cross_R[2].y);
 
         cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
+        //printf("dA              : %.16g\n", d_Ac.x);
 
-        // TODO
         Green = cuCmulf(cuCmulf(con[1], cuCexpf(make_cuFloatComplex(0, -kR))), d_Ac);
+        //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
+        
 
         for( int n=0; n<3; n++)
         {
-            e_field[n] = cuCmulf(cuCmulf(con[5], cuCsubf(cuCaddf(cuCmulf(js[n], kR_inv_sum1), cuCmulf(js_dot_R_R[n], kR_inv_sum2)), cuCmulf(ms_cross_R[n], kR_inv_sum3))), Green);
-            h_field[n] = cuCmulf(cuCmulf(con[6], cuCsubf(cuCaddf(cuCmulf(ms[n], kR_inv_sum1), cuCmulf(ms_dot_R_R[n], kR_inv_sum2)), cuCmulf(js_cross_R[n], kR_inv_sum3))), Green);
+            //e_temp[n] = cuCmulf(js[n], kR_inv_sum1);
+            
+            e_field[n] = cuCaddf(cuCmulf(cuCsubf(cuCmulf(con[4], cuCaddf(cuCmulf(js[n], kR_inv_sum1), cuCmulf(js_dot_R_R[n], kR_inv_sum2))), cuCmulf(ms_cross_R[n], kR_inv_sum3)), Green), e_field[n]);
+            //h_temp[n] = cuCmulf(ms[n], kR_inv_sum1);
+            
+            h_field[n] = cuCaddf(cuCmulf(cuCaddf(cuCmulf(con[5], cuCaddf(cuCmulf(ms[n], kR_inv_sum1), cuCmulf(ms_dot_R_R[n], kR_inv_sum2))), cuCmulf(js_cross_R[n], kR_inv_sum3)), Green), h_field[n]);
         }
+        //printf("e_temp      : %.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", e_temp[0].x, e_temp[0].y, e_temp[1].x, e_temp[1].y, e_temp[2].x, e_temp[2].y);
+        //printf("h_temp      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", h_temp[0].x, h_temp[0].y, h_temp[1].x, h_temp[1].y, h_temp[2].x, h_temp[2].y);
     }
+
+    printf("(%.16g, %.16g, %.16g), shaded_points: %d\n", point[0], point[1], point[2], shaded_points);
 
     d_ei[0] = e_field[0];
     d_ei[1] = e_field[1];
@@ -980,7 +1033,7 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
 
         dot(r_hat, source_point, r_hat_in_rp);
 
-        expo = expCo(cuCmulf(con[7], make_cuFloatComplex((con[0].x * r_hat_in_rp), 0.)));
+        expo = cuCexpf(cuCmulf(con[7], make_cuFloatComplex((con[0].x * r_hat_in_rp), 0.)));
 
         cfact = cuCmulf(expo, make_cuFloatComplex(d_A[i], 0.));
 
@@ -1116,7 +1169,7 @@ void __device__ scalarfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
         diff(point, source_point, r_vec);
         abs(r_vec, r);
 
-        expo = expCo(cuCmulf(con[7], make_cuFloatComplex(con[6].x * con[0].x * r, 0)));
+        expo = cuCexpf(cuCmulf(con[7], make_cuFloatComplex(con[6].x * con[0].x * r, 0)));
         cfact = make_cuFloatComplex(-con[0].x * con[0].x / (4 * r * con[4].x) * d_A[i], 0);
         
         e = cuCaddf(cuCmulf(cuCmulf(cfact, expo), d_sfs[i]), e);
