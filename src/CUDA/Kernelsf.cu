@@ -28,7 +28,7 @@ __constant__ int g_t;               // Gridsize on target
  *
  * @return BT Array of two dim3 objects, containing number of blocks per grid and number of threads per block.
  */
- __host__ std::array<dim3, 2> initCUDA(float k, float epsilon, int gt, int gs, float t_direction, int nBlocks, int nThreads)
+ __host__ std::array<dim3, 2> initCUDA(float k, float epsilon, int gt, int gs, int t_direction, int nBlocks, int nThreads)
  {
     // Calculate nr of blocks per grid and nr of threads per block
     dim3 nrb(nBlocks); dim3 nrt(nThreads);
@@ -50,6 +50,7 @@ __constant__ int g_t;               // Gridsize on target
     printf("EPS         : %.16g\n", EPS);
     printf("ZETA        : %.16g\n", ZETA);
     printf("ZETA_INV    : %.16g\n", ZETA_INV);
+    printf("t_direction : %d\n", t_direction);
     
     printf("k           : %.16g\n", k);
     printf("prefactor   : %.16g\n", prefactor);
@@ -192,9 +193,10 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         dot(source_norm, R_hat, norm_dot_R_hat);
         //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
         
-        if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
+        if (((norm_dot_R_hat < 0) && (con[8].x < 0)) || ((norm_dot_R_hat > 0) && (con[8].x > 0))) {
             shaded_points++;
-            continue;}
+            }
+        else {
 
         kR = con[0].x * R;
         //printf("kR                  : %.16g\n", kR);
@@ -250,6 +252,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         }
         //printf("e_temp      : %.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", e_temp[0].x, e_temp[0].y, e_temp[1].x, e_temp[1].y, e_temp[2].x, e_temp[2].y);
         //printf("h_temp      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", h_temp[0].x, h_temp[0].y, h_temp[1].x, h_temp[1].y, h_temp[2].x, h_temp[2].y);
+        }
     }
 
     printf("(%.16g, %.16g, %.16g), shaded_points: %d\n", point[0], point[1], point[2], shaded_points);
@@ -1336,7 +1339,7 @@ void callKernelf_JM(c2Bundlef *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 c2Bundlef *currents,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);
@@ -1428,7 +1431,7 @@ void callKernelf_EH(c2Bundlef *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 c2Bundlef *currents,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);
@@ -1519,7 +1522,7 @@ void callKernelf_JMEH(c4Bundlef *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 c2Bundlef *currents,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);
@@ -1616,7 +1619,7 @@ void callKernelf_EHP(c2rBundlef *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 c2Bundlef *currents,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);
@@ -1719,7 +1722,7 @@ void callKernelf_FF(c2Bundlef *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 c2Bundlef *currents,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);
@@ -1808,7 +1811,7 @@ void callKernelf_scalar(arrC1f *res, reflparamsf source, reflparamsf target,
                                 reflcontainerf *cs, reflcontainerf *ct,
                                 arrC1f *inp,
                                 float k, float epsilon,
-                                float t_direction, int nBlocks, int nThreads)
+                                int t_direction, int nBlocks, int nThreads)
 {
     // Generate source and target grids
     generateGridf(source, cs);

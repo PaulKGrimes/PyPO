@@ -1256,9 +1256,6 @@ def check_runPODict(runPODict, elements, fields, currents, scalarfields, frames,
         errStr += errMsg_field("t_name", "runRTDict")
     else:
         errStr = check_elemSystem(runPODict["t_name"], elements, clog, errStr)
-    
-    if "epsilon" not in runPODict:
-        runPODict["epsilon"] = 1
 
     if "device" not in runPODict:
         if cuda:

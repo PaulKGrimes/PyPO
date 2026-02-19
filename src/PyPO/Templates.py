@@ -129,7 +129,7 @@ runPODict = {
         "s_current"     : "Name of current object in system.currents (string)",
         "s_scalarfield" : "Scalar complex field for scalar propagation only (Numpy array)",
         "epsilon"       : "Relative permittivity of background media (real)",
-        "exp"           : "Divergent or convergent beam (string)",
+        "exp"           : "Time direction 'bwd' or 'fwd' (default 'fwd') (string)",
         "nThreads"      : "Number of CPU/GPU threads (int)",
         "device"        : "Device to use for calculation",
         "mode"          : "Determine return object (string)",

@@ -34,42 +34,42 @@ def loadGPUlib():
     lib.callKernelf_JM.argtypes = [ctypes.POINTER(PStructs.c2Bundlef), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.c2Bundlef), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_JM.restype = None
 
     lib.callKernelf_EH.argtypes = [ctypes.POINTER(PStructs.c2Bundlef), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.c2Bundlef), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_EH.restype = None
 
     lib.callKernelf_JMEH.argtypes = [ctypes.POINTER(PStructs.c4Bundlef), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.c2Bundlef), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_JMEH.restype = None
 
     lib.callKernelf_EHP.argtypes = [ctypes.POINTER(PStructs.c2rBundlef), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.c2Bundlef), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_EHP.restype = None
 
     lib.callKernelf_FF.argtypes = [ctypes.POINTER(PStructs.c2Bundlef), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.c2Bundlef), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_FF.restype = None
     
     lib.callKernelf_scalar.argtypes = [ctypes.POINTER(PStructs.arrC1f), PStructs.reflparamsf, PStructs.reflparamsf,
                                    ctypes.POINTER(PStructs.reflcontainerf), ctypes.POINTER(PStructs.reflcontainerf),
                                    ctypes.POINTER(PStructs.arrC1f), ctypes.c_float, ctypes.c_float,
-                                   ctypes.c_float, ctypes.c_int, ctypes.c_int]
+                                   ctypes.c_int, ctypes.c_int, ctypes.c_int]
 
     lib.callKernelf_scalar.restype = None
 
@@ -117,17 +117,16 @@ def PyPO_GPUf(source, target, runPODict):
 
     nBlocks = math.ceil(gt / runPODict["nThreads"])
 
-    if runPODict["exp"] == "fwd":
-        exp_prop = -1
-
-    elif runPODict["exp"] == "bwd":
+    if runPODict["exp"] == "bwd":
         exp_prop = 1
+    else:
+        exp_prop = -1
 
     k           = ctypes.c_float(runPODict["k"])
     nThreads    = ctypes.c_int(runPODict["nThreads"])
     nBlocks     = ctypes.c_int(nBlocks)
     epsilon     = ctypes.c_float(runPODict["epsilon"])
-    t_direction = ctypes.c_float(exp_prop)
+    t_direction = ctypes.c_int(exp_prop)
     
     if runPODict["mode"] == "scalar":
         c_field = PStructs.arrC1f()

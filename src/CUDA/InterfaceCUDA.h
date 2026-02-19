@@ -32,36 +32,36 @@ extern "C"
                reflcontainerf *cs, reflcontainerf *ct,
                c2Bundlef *currents,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
 
     PYPO_DLL void callKernelf_EH(c2Bundlef *res, reflparamsf source, reflparamsf target,
                reflcontainerf *cs, reflcontainerf *ct,
                c2Bundlef *currents,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
 
     PYPO_DLL void callKernelf_JMEH(c4Bundlef *res, reflparamsf source, reflparamsf target,
                reflcontainerf *cs, reflcontainerf *ct,
                c2Bundlef *currents,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
 
     PYPO_DLL void callKernelf_EHP(c2rBundlef *res, reflparamsf source, reflparamsf target,
                reflcontainerf *cs, reflcontainerf *ct,
                c2Bundlef *currents,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
 
     PYPO_DLL void callKernelf_FF(c2Bundlef *res, reflparamsf source, reflparamsf target,
                reflcontainerf *cs, reflcontainerf *ct,
                c2Bundlef *currents,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
     
     PYPO_DLL void callKernelf_scalar(arrC1f *res, reflparamsf source, reflparamsf target,
                reflcontainerf *cs, reflcontainerf *ct, arrC1f *inp,
                float k, float epsilon,
-               float t_direction, int nBlocks, int nThreads);
+               int t_direction, int nBlocks, int nThreads);
     
     PYPO_DLL void callRTKernel(reflparamsf ctp, cframef *fr_in,
                cframef *fr_out, float epsilon, float t0,

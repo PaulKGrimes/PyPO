@@ -197,7 +197,7 @@ void Parabola_uv(T *parabola, U xu_lo, U xu_up, U yv_lo,
             idx = i*ncy + j;
 
             x = u*cos(v)*cos(rot_uv) - u*sin(v)*sin(rot_uv) + xcenter;
-            y = u*cos(v)*sin(rot_uv) + u*sin(v)*cos(rot_uv) + ycenter;
+            y = u*sin(v)*cos(rot_uv) + u*cos(v)*sin(rot_uv) + ycenter;
             z = x*x/a/a + y*y/b/b;
 
             dxdu = cos(v)*cos(rot_uv) - sin(v)*sin(rot_uv);
