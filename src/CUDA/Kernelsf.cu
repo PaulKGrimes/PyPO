@@ -43,16 +43,16 @@ __constant__ int g_t;               // Gridsize on target
 
     float prefactor = k*k/(4*PIf);
 
-    printf("PIf         : %.16g\n", PIf);
-    printf("C_L         : %.16g\n", C_L);
-    printf("MU_0        : %.16g\n", MU_0);
-    printf("EPS_VAC     : %.16g\n", EPS_VAC);
-    printf("EPS         : %.16g\n", EPS);
-    printf("ZETA        : %.16g\n", ZETA);
-    printf("ZETA_INV    : %.16g\n", ZETA_INV);
+    //printf("PIf         : %.16g\n", PIf);
+    //printf("C_L         : %.16g\n", C_L);
+    //printf("MU_0        : %.16g\n", MU_0);
+    //printf("EPS_VAC     : %.16g\n", EPS_VAC);
+    //printf("EPS         : %.16g\n", EPS);
+    //printf("ZETA        : %.16g\n", ZETA);
+    //printf("ZETA_INV    : %.16g\n", ZETA_INV);
     
-    printf("k           : %.16g\n", k);
-    printf("prefactor   : %.16g\n", prefactor);
+    //printf("k           : %.16g\n", k);
+    //printf("prefactor   : %.16g\n", prefactor);
 
 
     // Fill ID matrix
@@ -116,9 +116,6 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     float (&point)[3], float *d_A,
                     cuFloatComplex (&d_ei)[3], cuFloatComplex (&d_hi)[3])
 {
-    // Scalar ints
-    int shaded_points;
-
     // Scalars (float & complex float)
     float R;                            // Distance between source and target points
     float R_inv;                        // 1 / R
@@ -150,11 +147,6 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
     cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat
     cuFloatComplex e_temp[3];           // Temporary container for intermediate values
     cuFloatComplex h_temp[3];           // Temporary container for intermediate values
-
-    //e_field = {con[8], con[8], con[8]};
-    //h_field = {con[8], con[8], con[8]};
-
-    shaded_points = 0;
 
     for(int i=0; i<g_s; i++)
 
@@ -193,7 +185,6 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
         
         if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
-            shaded_points++;
             continue;}
 
         kR = con[0].x * R;
@@ -251,8 +242,6 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         //printf("e_temp      : %.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", e_temp[0].x, e_temp[0].y, e_temp[1].x, e_temp[1].y, e_temp[2].x, e_temp[2].y);
         //printf("h_temp      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", h_temp[0].x, h_temp[0].y, h_temp[1].x, h_temp[1].y, h_temp[2].x, h_temp[2].y);
     }
-
-    printf("(%.16g, %.16g, %.16g), shaded_points: %d\n", point[0], point[1], point[2], shaded_points);
 
     d_ei[0] = e_field[0];
     d_ei[1] = e_field[1];
