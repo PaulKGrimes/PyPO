@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -shared -Wl,--dependency-file=CMakeFiles/pyporefl.dir/link.d -Wl,-soname,libpyporefl.so -o build/lib.linux-x86_64-cpython-314/PyPO/libpyporefl.so CMakeFiles/pyporefl.dir/src/common/InterfaceReflector.cpp.o

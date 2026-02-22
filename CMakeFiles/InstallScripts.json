@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/pgrimes/github/PyPO/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
