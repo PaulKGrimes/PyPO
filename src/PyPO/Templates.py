@@ -27,7 +27,8 @@ reflDict = {
         "lims_v"    : "Upper and lower rotation angle (gmode=uv, Numpy array of 2 reals)",
         "ecc_uv"    : "Eccentricity of uv-generated xy_grid (uv only)",
         "rot_uv"    : "Position angle of uv-generated xy grid (uv only)",
-        "gridsize"  : "Number of cells along x(u) and y(v) axes (Numpy array of 2 ints)"
+        "gridsize"  : "Number of cells along x(u) and y(v) axes of output fields (Numpy array of 2 ints)",
+        "po_gridsize" : "Number of points along the x(u) and y(v) axes to use in PO calculations (Numpy array of 2 ints)"
         }
 
 ##
@@ -126,15 +127,16 @@ aperDict = {
 # @ingroup public_api_templates
 runPODict = {
         "t_name"        : "Name of target surface (string)",
-        "s_current"     : "Name of current object in system.currents (string)",
+        "s_current"     : "Name of PO currents object in system.po_currents (string)",
         "s_scalarfield" : "Scalar complex field for scalar propagation only (Numpy array)",
         "epsilon"       : "Relative permittivity of background media (real)",
         "exp"           : "Divergent or convergent beam (string)",
         "nThreads"      : "Number of CPU/GPU threads (int)",
         "device"        : "Device to use for calculation",
         "mode"          : "Determine return object (string)",
-        "name_JM"       : "Name of output currents (string). Only relevant if 'mode' is set to JM or JMEH.",
-        "name_EH"       : "Name of output currents (string). Only relevant if 'mode' is set to EH, JMEH, EHP or FF.",
+        "name_PO"       : "Name of output PO currents, to be used in next PO calculation (string). Will default to '{t_name}_PO'",
+        "name_JM"       : "Name of output currents (string). Only relevant if 'mode' is set to JM, POJM, JMEH or POJMEH.",
+        "name_EH"       : "Name of output fields (string). Only relevant if 'mode' is set to EH, POEH, JMEH, POJMEH, EHP, POEHP or FF.",
         "name_field"    : "Name of output scalarfield (string). Only relevant if 'mode' is set to scalar."
         }
 

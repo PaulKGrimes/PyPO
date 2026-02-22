@@ -89,6 +89,7 @@ class resContainer(object):
             self[i] = self[i].conj().T
         return self
 
+
 class currents(resContainer):
     """!
     Wrapper for making a currents object. 
@@ -131,9 +132,63 @@ class fields(resContainer):
 
         super().__init__(Ex, Ey, Ez, Hx, Hy, Hz, restype="EH")
 
+class po_currents(object):
+    """!
+    Wrapper for making a PO currents object.
+    
+    This object contains all of the information required to evaluate the fields due to the currents on
+    a scatterer at some target point.
+    
+    The electric and magnetic currents in this object differ from those in the currents container
+    in that they are defined on an irregular grid suitable for Gauss-Legendre quadrature integration.
+    
+    The stored weights are either a 1d array for uv grids, representing the weights in the rho integration,
+    or an n x 2 array for xy grids, representing the weights for integraton in the x and y directions.
+
+    @ingroup public_api_types
+    """
+
+    def __init__(self, x, y, z, nx, ny, nz, area, weights, Jx, Jy, Jz, Mx, My, Mz, mode='uv'):
+        """!
+        Constructor. Takes PO components and assigns them to member variables.
+        
+        @param x        Grid x-position.
+        @param y        Grid y-position.
+        @param z        Grid z-position.
+        @param nx       Surface normal x-component.
+        @param ny       Surface normal y-component.
+        @param nz       Surface normal z-component.
+        @param area     Surface element area.
+        @param weights  Weights to use in quadrature integration. 
+        @param Jx       J-current x-component.
+        @param Jy       J-current y-component.
+        @param Jz       J-current z-component.
+        @param Mx       M-current x-component.
+        @param My       M-current y-component.
+        @param Mz       M-current z-component.
+        @param mode     Surface grid definition mode (string).
+        """
+        self.grid = reflGrids(x, y, z, nx, ny, nz, area)
+        self.weights = scalarfield(weights)
+        
+        self.currents = currents(Jx, Jy, Jz, Mx, My, Mz)
+        self.mode = mode
+        
+    def setMeta(self, surf, k):
+        """!
+        Set scalar field metadata.
+        
+        @param surf Name of surface on which scalar field is defined.
+        @param k Wavenumber in 1 / mm of scalar field.
+        """
+
+        self.surf = surf 
+        self.k = k
+
+
 class rfield(object):
     """!
-    Class for making a real-vaLuad 3D object, used for Poynting vectors.
+    Class for making a real-vaLued 3D object, used for Poynting vectors.
 
     @ingroup public_api_types
     """

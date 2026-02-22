@@ -66,6 +66,7 @@ class System(object):
         self.frames = {}
         self.fields = {}
         self.currents = {}
+        self.po_currents = {}
         self.scalarfields = {}
         self.groups = {}
         self.assoc = {}
