@@ -1518,7 +1518,7 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
     std::complex<T> Green;         // Container for Green's function
     std::complex<T> js_dot_R;      // Magnitude of electric currents on to R_hat
     std::complex<T> ms_dot_R;      // Magnitude of magnetic currents on to R_hat
-    std::complex<T> Rprime_dot_R_hat; // Magnitude of source point projected onto R_hat
+    T Rprime_dot_R_hat; // Magnitude of source point projected onto R_hat
 
     // Arrays of Ts
     std::array<T, 3> source_point; // Container for xyz co-ordinates
@@ -1576,7 +1576,7 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
         ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
         ut.ext(js, R_hat, js_cross_R);
 
-        ut.dot(source_point, r_hat, Rprime_dot_R_hat)
+        ut.dot(source_point, r_hat, Rprime_dot_R_hat);
 
         Green = prefactor * exp(-j * k * Rprime_dot_R_hat) * cs->area[i];
         //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
