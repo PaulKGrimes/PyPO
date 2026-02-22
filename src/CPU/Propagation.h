@@ -125,6 +125,9 @@ public:
     std::array<std::array<std::complex<T>, 3>, 2> farfieldAtPoint(V *cs, W *currents,
                                               const std::array<T, 3> &point_target);
 
+    std::array<std::array<std::complex<T>, 3>, 2> farfieldAtPoint_Old(V *cs, W *currents,
+                                              const std::array<T, 3> &point_target);
+
     void parallelFarField(V *cs, V *ct,
                         W *currents, U *res);
 
@@ -1019,7 +1022,7 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
         ut.ext(ms, R_hat, ms_cross_R);
 
         // h-field
-        ut.dot(js, R_hat, ms_dot_R);
+        ut.dot(ms, R_hat, ms_dot_R);
         ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
         ut.ext(js, R_hat, js_cross_R);
 
@@ -1489,6 +1492,7 @@ void Propagation<T, U, V, W>::propagateToFarField(int start, int stop,
     }
 }
 
+
 /**
  * Calculate far-field on target.
  *
@@ -1505,6 +1509,111 @@ void Propagation<T, U, V, W>::propagateToFarField(int start, int stop,
  */
 template <class T, class U, class V, class W>
 std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldAtPoint(V *cs,
+                                                W *currents,
+                                                const std::array<T, 3> &r_hat)
+{
+    // Scalars (T & complex T)
+    T norm_dot_R_hat;              // Source normal dotted with wavevector direction
+
+    std::complex<T> Green;         // Container for Green's function
+    std::complex<T> js_dot_R;      // Magnitude of electric currents on to R_hat
+    std::complex<T> ms_dot_R;      // Magnitude of magnetic currents on to R_hat
+    std::complex<T> Rprime_dot_R_hat; // Magnitude of source point projected onto R_hat
+
+    // Arrays of Ts
+    std::array<T, 3> source_point; // Container for xyz co-ordinates
+    std::array<T, 3> source_norm;  // Container for xyz normals.
+    std::array<T, 3> R_hat;        // Unit vector between source and target points
+    
+    // Arrays of complex Ts
+    std::array<std::complex<T>, 3> e_field;        // Electric field surface integral at point
+    std::array<std::complex<T>, 3> h_field;        // Magnetic field surface integral at point
+    std::array<std::complex<T>, 3> js;             // Electric current at source point
+    std::array<std::complex<T>, 3> ms;             // Magnetic current at source point
+    std::array<std::complex<T>, 3> js_dot_R_R;     // Electric currents projected on to R_hat
+    std::array<std::complex<T>, 3> ms_cross_R;     // Cross product of magnetic currents and R_hat
+    std::array<std::complex<T>, 3> ms_dot_R_R;     // Magnetic currents projected on to R_hat
+    std::array<std::complex<T>, 3> js_cross_R;     // Cross product of electric currents and R_hat
+    
+
+    // Return container
+    std::array<std::array<std::complex<T>, 3>, 2> e_h_field; // Return container containing e and h-fields
+
+    e_field.fill(z0);
+    h_field.fill(z0);
+
+    for(int i=0; i<gs; i++)
+    {
+        source_point[0] = cs->x[i];
+        source_point[1] = cs->y[i];
+        source_point[2] = cs->z[i];
+        
+        source_norm[0] = cs->nx[i];
+        source_norm[1] = cs->ny[i];
+        source_norm[2] = cs->nz[i];
+
+        js[0] = {currents->r1x[i], currents->i1x[i]};
+        js[1] = {currents->r1y[i], currents->i1y[i]};
+        js[2] = {currents->r1z[i], currents->i1z[i]};
+
+        ms[0] = {currents->r2x[i], currents->i2x[i]};
+        ms[1] = {currents->r2y[i], currents->i2y[i]};
+        ms[2] = {currents->r2z[i], currents->i2z[i]};
+
+        // Check if source point illuminates target point or not.
+        ut.dot(source_norm, R_hat, norm_dot_R_hat);
+        //printf("source_norm: (%.16g, %.16g, %.16g)\n", source_norm[0], source_norm[1], source_norm[2]); // %s is format specifier
+        //printf("n . R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
+        if (norm_dot_R_hat < 0) {continue;}
+
+        // e-field
+        ut.dot(js, R_hat, js_dot_R);
+        ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
+        ut.ext(ms, R_hat, ms_cross_R);
+
+        // h-field
+        ut.dot(ms, R_hat, ms_dot_R);
+        ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
+        ut.ext(js, R_hat, js_cross_R);
+
+        ut.dot(source_point, r_hat, Rprime_dot_R_hat)
+
+        Green = prefactor * exp(-j * k * Rprime_dot_R_hat) * cs->area[i];
+        //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
+
+        for( int n=0; n<3; n++)
+        {
+            e_field[n] += (ZETA * (js[n] - js_dot_R_R[n]) + ms_cross_R[n]) * Green;
+            h_field[n] += (ZETA_INV * (ms[n] + ms_dot_R_R[n]) - js_cross_R[n]) * Green;
+        }
+        
+    }
+
+    // Pack e and h together in single container
+    e_h_field[0] = e_field;
+    e_h_field[1] = h_field;
+
+    //std::cout << ut.abs(e_field) << std::endl;
+
+    return e_h_field;
+}
+
+/**
+ * Calculate far-field on target.
+ *
+ * Calculate integrated E and H fields on a far-field target point.
+ *
+ * @param cs Pointer to reflcontainer or reflcontainerf object containing source grids.
+ * @param currents Pointer to c2Bundle or c2Bundlef object containing currents on source.
+ * @param r_hat Array of 3 double/float containing target direction angles.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ * @see c2Bundle
+ * @see c2Bundlef
+ */
+template <class T, class U, class V, class W>
+std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldAtPoint_Old(V *cs,
                                                 W *currents,
                                                 const std::array<T, 3> &r_hat)
 {

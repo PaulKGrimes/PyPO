@@ -972,9 +972,12 @@ __global__ void GpropagateBeam_3(float *d_xs, float *d_ys, float *d_zs,
 /**
  * Calculate total E and H field at point on far-field target.
  *
- * @param d_xs Array containing source points x-coordinate.
- * @param d_ys Array containing source points y-coordinate.
- * @param d_zs Array containing source points z-coordinate.
+ * @param d_xs Array containing source point's x-coordinate.
+ * @param d_ys Array containing source point's y-coordinate.
+ * @param d_zs Array containing source point's z-coordinate.
+ * @param d_nxs Array containing source point's normal x-component.
+ * @param d_nys Array containing source point's y-component.
+ * @param d_nzs Array containing source point's z-component.
  * @param d_Jx Array containing source J x-component.
  * @param d_Jy Array containing source J y-component.
  * @param d_Jz Array containing source J z-component.
@@ -985,87 +988,113 @@ __global__ void GpropagateBeam_3(float *d_xs, float *d_ys, float *d_zs,
  * @param d_A Array containing area elements.
  * @param e Array of 3 cuFloatComplex, to be filled with E-field at point.
  */
-__device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
+__device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_nxs, float *d_nys, float *d_nzs,
                                 cuFloatComplex *d_Jx, cuFloatComplex *d_Jy, cuFloatComplex *d_Jz,
                                 cuFloatComplex *d_Mx, cuFloatComplex *d_My, cuFloatComplex *d_Mz,
                                 float (&r_hat)[3], float *d_A, cuFloatComplex (&e)[3], cuFloatComplex (&h)[3])
 {
+
     // Scalars (float & complex float)
-    float omega_mu;                       // Angular frequency of field times mu
-    float omega_eps;                       // Angular frequency of field times eps
-    float r_hat_in_rp;                 // r_hat dot product r_prime
+    cuFloatComplex Green;               // Container for Green's function
+    cuFloatComplex js_dot_R;            // Container for inner products between wavevctor and electric currents
+    cuFloatComplex ms_dot_R;            // Container for inner products between wavevctor and magnetics currents
+
 
     // Arrays of floats
     float source_point[3]; // Container for xyz co-ordinates
+    float source_norm[3];  // Container for xyz source normals
+    float source_point_dot_r_hat; // Container for projection of source point onto r_hat
+    float norm_dot_R_hat;  // Source normal dotted with wavevector direction
 
     // Arrays of complex floats
-    cuFloatComplex js[3] = {con[8], con[8], con[8]};      // Build radiation integral
-    cuFloatComplex ms[3] = {con[8], con[8], con[8]};      // Build radiation integral
-
-    cuFloatComplex _ctemp[3];
-    cuFloatComplex js_tot_factor[3];
-    cuFloatComplex ms_tot_factor[3];
-    cuFloatComplex js_tot_factor_h[3];
-    cuFloatComplex ms_tot_factor_h[3];
-    cuFloatComplex expo;
-    cuFloatComplex cfact;
-
-    // Matrices
-    float rr_dyad[3][3];       // Dyadic product between r_hat - r_hat
-    float eye_min_rr[3][3];    // I - rr
-
-    omega_mu = con[5].x * con[0].x * con[2].x;
-    dyad(r_hat, r_hat, rr_dyad);
-    matDiff(eye, rr_dyad, eye_min_rr);
-
-    e[0] = con[8];
-    e[1] = con[8];
-    e[2] = con[8];
-    
-    h[0] = con[8];
-    h[1] = con[8];
-    h[2] = con[8];
+    cuFloatComplex e_field[3] = {con[10], con[10], con[10]}; // Electric field on target
+    cuFloatComplex h_field[3] = {con[10], con[10], con[10]}; // Magnetic field on target
+    cuFloatComplex js[3];             // Electric current at source point
+    cuFloatComplex ms[3];             // Magnetic current at source point
+    cuFloatComplex js_dot_R_R[3];     // Electric current contribution to e-field
+    cuFloatComplex ms_dot_R_R[3];    // Magnetic current contribution to h-field
+    cuFloatComplex ms_cross_R[3];     // Outer product between ms and R_hat
+    cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat
+    cuFloatComplex e_temp[3];           // Temporary container for intermediate values
+    cuFloatComplex h_temp[3];           // Temporary container for intermediate values
 
     for(int i=0; i<g_s; i++)
+
     {
+        js[0] = d_Jx[i];
+        js[1] = d_Jy[i];
+        js[2] = d_Jz[i];
+
+        ms[0] = d_Mx[i];
+        ms[1] = d_My[i];
+        ms[2] = d_Mz[i];
+
+        //printf("ms      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms[0].x, ms[0].y, ms[1].x, ms[1].y, ms[2].x, ms[2].y);
         source_point[0] = d_xs[i];
         source_point[1] = d_ys[i];
         source_point[2] = d_zs[i];
+        
+        source_norm[0] = d_nxs[i];
+        source_norm[1] = d_nys[i];
+        source_norm[2] = d_nzs[i];
 
-        dot(r_hat, source_point, r_hat_in_rp);
+        dot(source_norm, r_hat, norm_dot_R_hat);
+        //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
+        
+        if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
+            continue;}
 
-        expo = cuCexpf(cuCmulf(con[7], make_cuFloatComplex((con[0].x * r_hat_in_rp), 0.)));
+        // Vector calculatoins
+        // e-field
+        dot(js, r_hat, js_dot_R);
+        //printf("js_dot_R         : %.16g+%.16gi\n", js_dot_R.x, js_dot_R.y);
+        
+        s_mult(r_hat, js_dot_R, js_dot_R_R);
+        //printf("js_dot_R_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_dot_R_R[0].x, js_dot_R_R[0].y, js_dot_R_R[1].x, js_dot_R_R[1].y, js_dot_R_R[2].x, js_dot_R_R[2].y);
 
-        cfact = cuCmulf(expo, make_cuFloatComplex(d_A[i], 0.));
+        ext(ms, r_hat, ms_cross_R);
+        //printf("ms_cross_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_cross_R[0].x, ms_cross_R[0].y, ms_cross_R[1].x, ms_cross_R[1].y, ms_cross_R[2].x, ms_cross_R[2].y);
 
-        js[0] = cuCaddf(js[0], cuCmulf(d_Jx[i], cfact));
-        js[1] = cuCaddf(js[1], cuCmulf(d_Jy[i], cfact));
-        js[2] = cuCaddf(js[2], cuCmulf(d_Jz[i], cfact));
 
-        ms[0] = cuCaddf(ms[0], cuCmulf(d_Mx[i], cfact));
-        ms[1] = cuCaddf(ms[1], cuCmulf(d_My[i], cfact));
-        ms[2] = cuCaddf(ms[2], cuCmulf(d_Mz[i], cfact));
+        // h-field
+        dot(ms, r_hat, ms_dot_R);
+        //printf("ms_dot_R        : %.16g+%.16gi\n", ms_dot_R.x, ms_dot_R.y);
+        
+        s_mult(r_hat, ms_dot_R, ms_dot_R_R);
+        //printf("ms_dot_R_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_dot_R_R[0].x, ms_dot_R_R[0].y, ms_dot_R_R[1].x, ms_dot_R_R[1].y, ms_dot_R_R[2].x, ms_dot_R_R[2].y);
 
+        ext(js, r_hat, js_cross_R);
+        //printf("js_cross_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_cross_R[0].x, js_cross_R[0].y, js_cross_R[1].x, js_cross_R[1].y, js_cross_R[2].x, js_cross_R[2].y);
+
+        cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
+        //printf("dA              : %.16g\n", d_Ac.x);
+
+        dot(source_point, r_hat, source_point_dot_r_hat);
+
+        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[0], make_cuFloatComplex(source_point_dot_r_hat,0))))), d_Ac);
+        //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
+        
+
+        for( int n=0; n<3; n++)
+        {
+            //e_temp[n] = cuCmulf(js[n], kR_inv_sum1);
+            
+            e_field[n] = cuCaddf(cuCmulf(cuCsubf(cuCmulf(con[4], cuCaddf(js[n], js_dot_R_R[n])), ms_cross_R[n]), Green), e_field[n]);
+            //h_temp[n] = cuCmulf(ms[n], kR_inv_sum1);
+            
+            h_field[n] = cuCaddf(cuCmulf(cuCaddf(cuCmulf(con[5], cuCaddf(ms[n], ms_dot_R_R[n])), js_cross_R[n]), Green), h_field[n]);
+        }
+        //printf("e_temp      : %.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", e_temp[0].x, e_temp[0].y, e_temp[1].x, e_temp[1].y, e_temp[2].x, e_temp[2].y);
+        //printf("h_temp      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", h_temp[0].x, h_temp[0].y, h_temp[1].x, h_temp[1].y, h_temp[2].x, h_temp[2].y);
     }
-    matVec(eye_min_rr, js, _ctemp);
-    s_mult(_ctemp, omega_mu, js_tot_factor);
 
-    ext(r_hat, ms, _ctemp);
-    s_mult(_ctemp, con[0].x, ms_tot_factor);
+    e[0] = e_field[0];
+    e[1] = e_field[1];
+    e[2] = e_field[2];
 
-    omega_eps = con[5].x * con[0].x * con[1].x;
-    
-    matVec(eye_min_rr, ms, _ctemp);
-    s_mult(_ctemp, omega_eps, ms_tot_factor_h);
-
-    ext(r_hat, js, _ctemp);
-    s_mult(_ctemp, -con[0].x, js_tot_factor_h);
-    
-    for (int n=0; n<3; n++)
-    {
-        e[n] = cuCsubf(ms_tot_factor[n], js_tot_factor[n]);
-        h[n] = cuCsubf(js_tot_factor_h[n], ms_tot_factor_h[n]);
-    }
+    h[0] = h_field[0];
+    h[1] = h_field[1];
+    h[2] = h_field[2];
 }
 
 /**
@@ -1092,7 +1121,7 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
  * @param d_Hyt Array to be filled with target H y-component.
  * @param d_Hzt Array to be filled with target H z-component.
  */
-void __global__ GpropagateBeam_4(float *d_xs, float *d_ys, float *d_zs,
+void __global__ GpropagateBeam_4(float *d_xs, float *d_ys, float *d_zs, float *d_nxs, float *d_nys, float *d_nzs,
                                 float *d_A, float *d_xt, float *d_yt,
                                 cuFloatComplex *d_Jx, cuFloatComplex *d_Jy, cuFloatComplex *d_Jz,
                                 cuFloatComplex *d_Mx, cuFloatComplex *d_My, cuFloatComplex *d_Mz,
@@ -1121,7 +1150,7 @@ void __global__ GpropagateBeam_4(float *d_xs, float *d_ys, float *d_zs,
         r_hat[2] = cos(phi);
 
         // Calculate total incoming E field at point on far-field
-        farfieldAtPoint(d_xs, d_ys, d_zs,
+        farfieldAtPoint(d_xs, d_ys, d_zs, d_nxs, d_nys, d_nzs,
                       d_Jx, d_Jy, d_Jz,
                       d_Mx, d_My, d_Mz,
                       r_hat, d_A, e, h);
@@ -1732,10 +1761,10 @@ void callKernelf_FF(c2Bundlef *res, reflparamsf source, reflparamsf target,
 
     MemUtils memutil;
 
-    int n_ds = 4;
+    int n_ds = 7;
     int n_dt = 2;
      
-    std::vector<float*> vec_csdat = {cs->x, cs->y, cs->z, cs->area};
+    std::vector<float*> vec_csdat = {cs->x, cs->y, cs->z, cs->nx, cs->ny, cs->nz, cs->area};
     std::vector<float*> vec_ctdat = {ct->x, ct->y};
 
     std::vector<float*> vec_ds = memutil.cuMallFloat(n_ds, cs->size);
@@ -1763,8 +1792,8 @@ void callKernelf_FF(c2Bundlef *res, reflparamsf source, reflparamsf target,
     memutil.cuMemCpComplex(vec_din, vec_hin, cs->size); 
     memutil.deallocComplexHost(vec_hin);
 
-    GpropagateBeam_4<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3],
-                                       vec_dt[0], vec_dt[1],
+    GpropagateBeam_4<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3], vec_ds[4], vec_ds[5], vec_ds[6],
+                                       vec_dt[0], vec_dt[1], 
                                        vec_din[0], vec_din[1], vec_din[2],
                                        vec_din[3], vec_din[4], vec_din[5],
                                        vec_dout[0], vec_dout[1], vec_dout[2],
