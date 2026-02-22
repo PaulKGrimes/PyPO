@@ -104,11 +104,11 @@ class Units(float, Enum):
 
     @ingroup public_api_argopts
     """
-    M = 1e3
-    CM = 1e2
-    MM = 1
-    UM = 1e-3
-    NM = 1e-6
+    M = 1
+    CM = 1e-2
+    MM = 1e-3
+    UM = 1e-6
+    NM = 1e-9
     DEG = 1
     AM = 60
     AS = 3600
@@ -122,13 +122,15 @@ class Scales(Enum):
     For example, using the scale argument, it is possible to fit a Gaussian to a beam pattern in linear, logarithmic and decibel space.
 
     Options:\n
-    LIN       : Set scaling mode to linear\n
+    LIN       : Set scaling mode to linear power\n
+    LINAMP    : Set scaling mode to linear amplitude\n
     dB        : Set scaling to decibels
 
     @ingroup public_api_argopts
     """
 
     LIN = 0
+    LINAMP = 1
     dB = 2
 
 class Objects(Enum):
