@@ -105,10 +105,10 @@ class Units(float, Enum):
     @ingroup public_api_argopts
     """
     M = 1e3
-    CM = 1e2
-    MM = 1
-    UM = 1e-3
-    NM = 1e-6
+    CM = 1e-2*M
+    MM = 1e-3*M
+    UM = 1e-6*M
+    NM = 1e-9*M
     DEG = 1
     AM = 60
     AS = 3600
