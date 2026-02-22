@@ -226,7 +226,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
         //printf("dA              : %.16g\n", d_Ac.x);
 
-        Green = cuCmulf(cuCmulf(con[1], cuCexpf(make_cuFloatComplex(0, -kR))), d_Ac);
+        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(con[8], make_cuFloatComplex(0, -kR)))), d_Ac);
         //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
         
 
@@ -1060,7 +1060,7 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
 
         dot(source_point, r_hat, source_point_dot_r_hat);
 
-        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[0], make_cuFloatComplex(source_point_dot_r_hat,0))))), d_Ac);
+        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(con[9], cuCmulf(con[0], make_cuFloatComplex(source_point_dot_r_hat,0))))), d_Ac);
         //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
         
 
@@ -1188,7 +1188,7 @@ void __device__ scalarfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
         diff(point, source_point, r_vec);
         abs(r_vec, r);
 
-        expo = cuCexpf(cuCmulf(con[7], make_cuFloatComplex(con[6].x * con[0].x * r, 0)));
+        expo = cuCexpf(cuCmulf(con[9], make_cuFloatComplex(con[8].x * con[0].x * r, 0)));
         cfact = make_cuFloatComplex(-con[0].x * con[0].x / (4 * r * con[4].x) * d_A[i], 0);
         
         e = cuCaddf(cuCmulf(cuCmulf(cfact, expo), d_sfs[i]), e);
