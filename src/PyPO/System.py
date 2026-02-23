@@ -1384,6 +1384,7 @@ class System(object):
 
         self.fields[_gaussDict["name"]] = gauss_in[0]
         self.currents[_gaussDict["name"]] = gauss_in[1]
+        
     
     def createScalarGaussian(self, gaussDict : dict, name_surface : str):
         """!

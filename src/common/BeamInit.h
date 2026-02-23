@@ -67,6 +67,9 @@ T pdfGauss(std::vector<T> vars, std::vector<T> scales);
 /** 
  * Initialize Gaussian beam from GPODict or GPODictf.
  *
+ * The generated Gaussian has E-field and magnetic currents only. This _is_ what you want
+ * as a source in PO calculations.
+ * 
  * Takes a GPODict or GPODictf and generates two c2Bundle or c2Bundlef objects, which contain the field and 
  *      associated currents and are allocated to passed pointer arguments.
  *
@@ -85,6 +88,7 @@ T pdfGauss(std::vector<T> vars, std::vector<T> scales);
  */
 template<typename T, typename U, typename V, typename W, typename G>
 void initGauss(T gdict, U refldict, V *res_field, V *res_current);
+
 
 /** 
  * Initialize scalar Gaussian beam from GPODict or GPODictf.
@@ -253,6 +257,7 @@ T pdfGauss(std::vector<T> vars, std::vector<T> scales)
     return norm * exp(-vars[0]*vars[0] / (scales[0]*scales[0])) * exp(-vars[1]*vars[1] / (scales[1]*scales[1])) * 
                     exp(-vars[2]*vars[2] / (scales[2]*scales[2])) * exp(-vars[3]*vars[3] / (scales[3]*scales[3]));
 }
+
 
 template<typename T, typename U, typename V, typename W, typename G>
 void initGauss(T gdict, U refldict, V *res_field, V *res_current)

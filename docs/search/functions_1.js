@@ -1,21 +1,21 @@
 var searchData=
 [
-  ['abs_0',['abs',['../classUtils.html#a1576060aa3924e36416eafbcd50b487e',1,'Utils::abs()'],['../GUtils_8h.html#a5beb40dc060ea1c2df2955d79605bfe4',1,'abs():&#160;GUtils.h']]],
+  ['abs_0',['abs',['../GUtils_8h.html#a5beb40dc060ea1c2df2955d79605bfe4',1,'abs():&#160;GUtils.h'],['../classUtils.html#a1576060aa3924e36416eafbcd50b487e',1,'Utils::abs(const std::array&lt; T, 3 &gt; &amp;v, T &amp;out)']]],
   ['add_1',['add',['../classUtils.html#a6f0fca89ba0ef56f6b4688a1f19c401f',1,'Utils::add()'],['../GUtils_8h.html#a8ef9560cf95b6226aebec0b889ef1460',1,'add():&#160;GUtils.h']]],
   ['addcurrentwidget_2',['addCurrentWidget',['../classGUI_1_1MainWindow_1_1MainWidget.html#a2f6d17d8a40d24f3158235365300c068',1,'GUI::MainWindow::MainWidget']]],
-  ['addellipse_3',['addEllipse',['../group__public__api__reflmeths.html#gae3e8340b40a10fb46cefbc6fc8667584',1,'PyPO::System::System']]],
+  ['addellipse_3',['addEllipse',['../group__public__api__reflmeths.html#ga12e7f32d08b194ba9666db52ba2c7e69',1,'PyPO::System::System']]],
   ['addellipseaction_4',['addEllipseAction',['../classGUI_1_1MainWindow_1_1MainWidget.html#a205fccd33becbcfef97dc0934ebff27a',1,'GUI::MainWindow::MainWidget']]],
   ['addfieldwidget_5',['addFieldWidget',['../classGUI_1_1MainWindow_1_1MainWidget.html#aefd50fe44126cf7e14a5116b5ceff5bd',1,'GUI::MainWindow::MainWidget']]],
   ['addframewidget_6',['addFrameWidget',['../classGUI_1_1MainWindow_1_1MainWidget.html#aad66d552ebe38d38fba79f52eccdff13',1,'GUI::MainWindow::MainWidget']]],
   ['addgroupaction_7',['addGroupAction',['../classGUI_1_1MainWindow_1_1MainWidget.html#a23e848f0ea2985854eb1c95943e3b74a',1,'GUI::MainWindow::MainWidget']]],
-  ['addgroupform_8',['addGroupForm',['../classGUI_1_1MainWindow_1_1MainWidget.html#a745d1ee554c423074e228131b19a6949',1,'GUI.MainWindow.MainWidget.addGroupForm()'],['../formData_8py.html#a6244a9230001a6d48e01adeea0a071cb',1,'GUI.ParameterForms.formData.addGroupForm()']]],
+  ['addgroupform_8',['addgroupform',['../classGUI_1_1MainWindow_1_1MainWidget.html#a745d1ee554c423074e228131b19a6949',1,'GUI.MainWindow.MainWidget.addGroupForm()'],['../formData_8py.html#a6244a9230001a6d48e01adeea0a071cb',1,'GUI.ParameterForms.formData.addGroupForm()']]],
   ['addgroupwidget_9',['addGroupWidget',['../classGUI_1_1MainWindow_1_1MainWidget.html#af68200aecd72b345ec7a8983b6b00c6d',1,'GUI::MainWindow::MainWidget']]],
-  ['addhyperbola_10',['addHyperbola',['../group__public__api__reflmeths.html#ga2a7cfa3b65e048056d1cf5d9ce5b07f8',1,'PyPO::System::System']]],
+  ['addhyperbola_10',['addHyperbola',['../group__public__api__reflmeths.html#ga38e0af258b3cfbaa9dce5170d746dc31',1,'PyPO::System::System']]],
   ['addhyperbolaaction_11',['addHyperbolaAction',['../classGUI_1_1MainWindow_1_1MainWidget.html#a891da3478585fd0b9f88dcdaa2c38bfa',1,'GUI::MainWindow::MainWidget']]],
   ['addlogginglevel_12',['addLoggingLevel',['../CustomLogger_8py.html#ad477936f71aaff317db9c69168b9fb2d',1,'PyPO::CustomLogger']]],
-  ['addparabola_13',['addParabola',['../group__public__api__reflmeths.html#ga562ec1f5d927dd5e14d79203cfe7f5a1',1,'PyPO::System::System']]],
+  ['addparabola_13',['addParabola',['../group__public__api__reflmeths.html#ga5ba23886257b401b4a71bcfec498d0ac',1,'PyPO::System::System']]],
   ['addparabolaaction_14',['addParabolaAction',['../classGUI_1_1MainWindow_1_1MainWidget.html#a1bde8375f06d1f08c4f8d37b18087d7f',1,'GUI::MainWindow::MainWidget']]],
-  ['addplane_15',['addPlane',['../group__public__api__reflmeths.html#gad66155cd4008efdba1f9db35fcabda7c',1,'PyPO::System::System']]],
+  ['addplane_15',['addPlane',['../group__public__api__reflmeths.html#gac929b3a8389c0cdec28c57871d0e0fe9',1,'PyPO::System::System']]],
   ['addplaneaction_16',['addPlaneAction',['../classGUI_1_1MainWindow_1_1MainWidget.html#a72790668ad877c555a728e1b28a8add1',1,'GUI::MainWindow::MainWidget']]],
   ['addplaneform_17',['addPlaneForm',['../classGUI_1_1MainWindow_1_1MainWidget.html#a6bf1036e36ff9905b67e280e426ba820',1,'GUI::MainWindow::MainWidget']]],
   ['addplot_18',['addPlot',['../classGUI_1_1MainWindow_1_1MainWidget.html#ad24c916af0155c554c9399345b0377b9',1,'GUI::MainWindow::MainWidget']]],
@@ -42,5 +42,5 @@ var searchData=
   ['allocate_5freflcontainer_39',['allocate_reflcontainer',['../BindUtils_8py.html#ac35b39fb1a3ef392b568fab6be348a04',1,'PyPO::BindUtils']]],
   ['aoe_5fopts_40',['AoE_opts',['../formData_8py.html#a735971f5ce133acf3314f5ebe1d3fad9',1,'GUI::ParameterForms::formData']]],
   ['arrc1toobj_41',['arrC1ToObj',['../BindUtils_8py.html#a479c2068e79217263f839cbde55465e4',1,'PyPO::BindUtils']]],
-  ['autoconverge_42',['autoConverge',['../group__public__api__po.html#gad34b49c710516d209762c875853fe487',1,'PyPO::System::System']]]
+  ['autoconverge_42',['autoConverge',['../group__public__api__po.html#gab2b683d9e34420ba4b0daf0eb7783151',1,'PyPO::System::System']]]
 ];
