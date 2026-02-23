@@ -14,5 +14,6 @@ var searchData=
   ['bmergeactionfields_11',['BMergeActionFields',['../classGUI_1_1MainWindow_1_1MainWidget.html#ab8c38207eef0d21abe9dfeb307a3f071',1,'GUI::MainWindow::MainWidget']]],
   ['bottom_20layer_12',['Rock Bottom: The Bottom Layer',['../basictut1.html#basictut1_bottom',1,'']]],
   ['bottom_3a_20the_20bottom_20layer_13',['Rock Bottom: The Bottom Layer',['../basictut1.html#basictut1_bottom',1,'']]],
-  ['bugs_14',['Issues, Feauture Requests &amp; Bugs',['../contribguide.html#issues',1,'']]]
+  ['bugs_14',['Issues, Feauture Requests &amp; Bugs',['../contribguide.html#issues',1,'']]],
+  ['but_20highly_20recommended_3a_20install_20miniconda_15',['Optional, but highly recommended: Install Miniconda',['../install.html#miniforge-conda',1,'']]]
 ];

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['some_20more_20pypo_20dataclasses_0',['Some More PyPO Dataclasses',['../basictut5.html',1,'']]],
-  ['system_1',['The PyPO System',['../basictut2.html',1,'']]]
+  ['reflector_20group_20configurations_20in_20pypo_0',['Optimising reflector/group configurations in PyPO',['../basictut6.html',1,'']]],
+  ['reflectors_20elements_1',['Generating Reflectors/Elements',['../basictut3.html',1,'']]]
 ];

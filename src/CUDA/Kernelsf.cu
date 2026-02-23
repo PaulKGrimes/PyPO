@@ -201,6 +201,88 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
 }
 
 /**
+ * Calculate JM on PEC target
+ *
+ * Kernel for calculating J, M currents on a perfectly conducting target surface.
+ * This reduces the calculation of the currents to Je = 2 n^Hinc and Jm = -2 n^Einc
+ *
+ * @param d_xs Array containing source points x-coordinate.
+ * @param d_ys Array containing source points y-coordinate.
+ * @param d_zs Array containing source points z-coordinate.
+ * @param d_A Array containing area elements.
+ * @param d_xt Array containing target points x-coordinate.
+ * @param d_yt Array containing target points y-coordinate.
+ * @param d_zt Array containing target points z-coordinate.
+ * @param d_nxs Array containing source normals x-component.
+ * @param d_nys Array containing source normals y-component.
+ * @param d_nzs Array containing source normals z-component.
+ * @param d_nxt Array containing target norms x-component.
+ * @param d_nyt Array containing target norms y-component.
+ * @param d_nzt Array containing target norms z-component.
+ * @param d_Jx Array containing source J x-component.
+ * @param d_Jy Array containing source J y-component.
+ * @param d_Jz Array containing source J z-component.
+ * @param d_Mx Array containing source M x-component.
+ * @param d_My Array containing source M y-component.
+ * @param d_Mz Array containing source M z-component.
+ * @param d_Jxt Array to be filled with target J x-component.
+ * @param d_Jyt Array to be filled with target J y-component.
+ * @param d_Jzt Array to be filled with target J z-component.
+ * @param d_Mxt Array to be filled with target M x-component.
+ * @param d_Myt Array to be filled with target M y-component.
+ * @param d_Mzt Array to be filled with target M z-component.
+ */
+__global__ void GpropagateBeam_0_PEC(float *d_xs, float *d_ys, float *d_zs,
+                                float *d_A, float *d_xt, float *d_yt, float *d_zt,
+                                float *d_nxs, float *d_nys, float *d_nzs,
+                                float *d_nxt, float *d_nyt, float *d_nzt,
+                                cuFloatComplex *d_Jx, cuFloatComplex *d_Jy, cuFloatComplex *d_Jz,
+                                cuFloatComplex *d_Mx, cuFloatComplex *d_My, cuFloatComplex *d_Mz,
+                                cuFloatComplex *d_Jxt, cuFloatComplex *d_Jyt, cuFloatComplex *d_Jzt,
+                                cuFloatComplex *d_Mxt, cuFloatComplex *d_Myt, cuFloatComplex *d_Mzt)
+{
+    float point[3];            // Point on target
+    float norms[3];            // Normal vector at point
+
+    // Return containers
+    cuFloatComplex d_je[3];    // Electric current
+    cuFloatComplex d_jm[3];    // Electric current
+
+    // E and H field containers
+    cuFloatComplex d_ei[3];
+    cuFloatComplex d_hi[3];
+
+    int idx = blockDim.x*blockIdx.x + threadIdx.x;
+    if (idx < g_t)
+    {
+        point[0] = d_xt[idx];
+        point[1] = d_yt[idx];
+        point[2] = d_zt[idx];
+
+        norms[0] = d_nxt[idx];
+        norms[1] = d_nyt[idx];
+        norms[2] = d_nzt[idx];
+
+        // Calculate total incoming E and H field at point on target
+        fieldAtPoint(d_xs, d_ys, d_zs,
+                    d_nxs, d_nys, d_nzs,
+                    d_Jx, d_Jy, d_Jz,
+                    d_Mx, d_My, d_Mz,
+                    point, d_A, d_ei, d_hi);
+
+        ext(norms, d_hi, d_je);
+
+        d_Jxt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[0]);
+        d_Jyt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[1]);
+        d_Jzt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[2]);
+
+        d_Mxt[idx] = make_cuFloatComplex(0, 0);
+        d_Myt[idx] = make_cuFloatComplex(0, 0);
+        d_Mzt[idx] = make_cuFloatComplex(0, 0);
+    }
+}
+
+/**
  * Calculate JM on target.
  *
  * Kernel for calculating J, M currents on target surface.
@@ -346,6 +428,108 @@ __global__ void GpropagateBeam_0(float *d_xs, float *d_ys, float *d_zs,
         d_Mzt[idx] = temp3[2];
     }
 }
+
+
+/**
+ * Calculate JMEH on PEC target
+ *
+ * Kernel for calculating J, M, E & H currents on a perfectly conducting target surface.
+ * This reduces the calculation of the currents to Je = 2 n^Hinc and Jm = 2 n^Einc
+ *
+ * @param d_xs Array containing source points x-coordinate.
+ * @param d_ys Array containing source points y-coordinate.
+ * @param d_zs Array containing source points z-coordinate.
+ * @param d_A Array containing area elements.
+ * @param d_xt Array containing target points x-coordinate.
+ * @param d_yt Array containing target points y-coordinate.
+ * @param d_zt Array containing target points z-coordinate.
+ * @param d_nxs Array containing source normals x-component.
+ * @param d_nys Array containing source normals y-component.
+ * @param d_nzs Array containing source normals z-component.
+ * @param d_nxt Array containing target norms x-component.
+ * @param d_nyt Array containing target norms y-component.
+ * @param d_nzt Array containing target norms z-component.
+ * @param d_Jx Array containing source J x-component.
+ * @param d_Jy Array containing source J y-component.
+ * @param d_Jz Array containing source J z-component.
+ * @param d_Mx Array containing source M x-component.
+ * @param d_My Array containing source M y-component.
+ * @param d_Mz Array containing source M z-component.
+ * @param d_Jxt Array to be filled with target J x-component.
+ * @param d_Jyt Array to be filled with target J y-component.
+ * @param d_Jzt Array to be filled with target J z-component.
+ * @param d_Mxt Array to be filled with target M x-component.
+ * @param d_Myt Array to be filled with target M y-component.
+ * @param d_Mzt Array to be filled with target M z-component.
+ * @param d_Ext Array to be filled with target E x-component.
+ * @param d_Eyt Array to be filled with target E y-component.
+ * @param d_Ezt Array to be filled with target E z-component.
+ * @param d_Hxt Array to be filled with target H x-component.
+ * @param d_Hyt Array to be filled with target H y-component.
+ * @param d_Hzt Array to be filled with target H z-component.
+ */
+__global__ void GpropagateBeam_2_PEC(float *d_xs, float *d_ys, float *d_zs,
+                                float *d_A, float *d_xt, float *d_yt, float *d_zt,
+                                float *d_nxs, float *d_nys, float *d_nzs,
+                                float *d_nxt, float *d_nyt, float *d_nzt,
+                                cuFloatComplex *d_Jx, cuFloatComplex *d_Jy, cuFloatComplex *d_Jz,
+                                cuFloatComplex *d_Mx, cuFloatComplex *d_My, cuFloatComplex *d_Mz,
+                                cuFloatComplex *d_Jxt, cuFloatComplex *d_Jyt, cuFloatComplex *d_Jzt,
+                                cuFloatComplex *d_Mxt, cuFloatComplex *d_Myt, cuFloatComplex *d_Mzt,
+                                cuFloatComplex *d_Ext, cuFloatComplex *d_Eyt, cuFloatComplex *d_Ezt,
+                                cuFloatComplex *d_Hxt, cuFloatComplex *d_Hyt, cuFloatComplex *d_Hzt)
+{
+    float point[3];            // Point on target
+    float norms[3];            // Normal vector at point
+
+    // Return containers
+    cuFloatComplex d_je[3];    // Electric current
+    cuFloatComplex d_jm[3];    // Electric current
+
+    // E and H field containers
+    cuFloatComplex d_ei[3];
+    cuFloatComplex d_hi[3];
+
+    int idx = blockDim.x*blockIdx.x + threadIdx.x;
+    if (idx < g_t)
+    {
+        point[0] = d_xt[idx];
+        point[1] = d_yt[idx];
+        point[2] = d_zt[idx];
+
+        norms[0] = d_nxt[idx];
+        norms[1] = d_nyt[idx];
+        norms[2] = d_nzt[idx];
+
+        // Calculate total incoming E and H field at point on target
+        fieldAtPoint(d_xs, d_ys, d_zs,
+                    d_nxs, d_nys, d_nzs,
+                    d_Jx, d_Jy, d_Jz,
+                    d_Mx, d_My, d_Mz,
+                    point, d_A, d_ei, d_hi);
+
+        d_Ext[idx] = d_ei[0];
+        d_Eyt[idx] = d_ei[1];
+        d_Ezt[idx] = d_ei[2];
+
+        d_Hxt[idx] = d_hi[0];
+        d_Hyt[idx] = d_hi[1];
+        d_Hzt[idx] = d_hi[2];
+
+        ext(norms, d_hi, d_je);
+
+        d_Jxt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[0]);
+        d_Jyt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[1]);
+        d_Jzt[idx] = cuCmulf(make_cuFloatComplex(2., 0), d_je[2]);
+
+        ext(norms, d_ei, d_jm);
+        
+        d_Mxt[idx] = make_cuFloatComplex(0, 0);
+        d_Myt[idx] = make_cuFloatComplex(0, 0);
+        d_Mzt[idx] = make_cuFloatComplex(0, 0);
+    }
+}
+
 
 /**
  * Calculate EH on target.
@@ -1134,7 +1318,7 @@ void callKernelf_JM(c2Bundlef *res, reflparamsf source, reflparamsf target,
     memutil.deallocComplexHost(vec_hin);
 
     // Call to KERNEL 0
-    GpropagateBeam_0<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3],
+    GpropagateBeam_0_PEC<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3],
                                        vec_dt[0], vec_dt[1], vec_dt[2],
                                        vec_ds[4], vec_ds[5], vec_ds[6],
                                        vec_dt[3], vec_dt[4], vec_dt[5],
@@ -1317,7 +1501,7 @@ void callKernelf_JMEH(c4Bundlef *res, reflparamsf source, reflparamsf target,
     memutil.deallocComplexHost(vec_hin);
 
     // Call to KERNEL 2
-    GpropagateBeam_2<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3],
+    GpropagateBeam_2_PEC<<<BT[0], BT[1]>>>(vec_ds[0], vec_ds[1], vec_ds[2], vec_ds[3],
                                        vec_dt[0], vec_dt[1], vec_dt[2],
                                        vec_ds[4], vec_ds[5], vec_ds[6],
                                        vec_dt[3], vec_dt[4], vec_dt[5],

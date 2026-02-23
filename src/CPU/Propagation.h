@@ -71,11 +71,19 @@ public:
     Utils<T> ut;    /**<Utils object for vector operations.*/
 
     // Functions for propagating fields between two surfaces
+    void propagateBeam_JM_PEC(int start, int stop,
+                          V *cs, V *ct,
+                          W *currents, U *res);
+
     void propagateBeam_JM(int start, int stop,
                           V *cs, V *ct,
                           W *currents, U *res);
 
     void propagateBeam_EH(int start, int stop,
+                          V *cs, V *ct,
+                          W *currents, U *res);
+
+    void propagateBeam_JMEH_PEC(int start, int stop,
                           V *cs, V *ct,
                           W *currents, U *res);
 
@@ -187,6 +195,76 @@ Propagation<T, U, V, W>::Propagation(T k, int numThreads, int gs, int gt, T epsi
         printf("--- Device         :   CPU\n");
         printf("***--------- PO info ---------***\n");
         printf("\n");
+    }
+}
+
+
+/**
+ * Calculate JM on target - PEC version.
+ *
+ * Calculate the J, M currents on a perfectly conducting target surface.
+ *
+ * @param start Index of first loop iteration in parallel block.
+ * @param stop Index of last loop iteration in parallel block.
+ * @param cs Pointer to reflcontainer or reflcontainerf object containing source grids.
+ * @param ct Pointer to reflcontainer or reflcontainerf object containing target grids.
+ * @param currents Pointer to c2Bundle or c2Bundlef object containing currents on source.
+ * @param res Pointer to c2Bundle or c2Bundlef object, to be filled with calculation results.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ * @see c2Bundle
+ * @see c2Bundlef
+ */
+template <class T, class U, class V, class W>
+void Propagation<T,U, V, W>::propagateBeam_JM_PEC(int start, int stop,
+                                              V *cs, V *ct,
+                                              W *currents, U *res)
+{
+    // Arrays of Ts
+    std::array<T, 3> point;            // Point on target
+    std::array<T, 3> norms;            // Normal vector at point
+
+    // Arrays of complex Ts to hold return values
+    std::array<std::complex<T>, 3> jt;
+    std::array<std::complex<T>, 3> mt;
+
+    // Return containers
+    std::array<std::array<std::complex<T>, 3>, 2> beam_e_h; // Container for storing fieldAtPoint return
+
+    int jc = 0; // Counter
+
+    for(int i=start; i<stop; i++)
+    {
+
+        point[0] = ct->x[i];
+        point[1] = ct->y[i];
+        point[2] = ct->z[i];
+
+        norms[0] = ct->nx[i];
+        norms[1] = ct->ny[i];
+        norms[2] = ct->nz[i];
+
+        // Calculate total incoming E and H field at point on target
+        beam_e_h = fieldAtPoint(cs, currents, point);
+
+        ut.ext(norms, beam_e_h[1], jt);
+        
+        res->r1x[i] = 2*jt[0].real();
+        res->r1y[i] = 2*jt[1].real();
+        res->r1z[i] = 2*jt[2].real();
+
+        res->i1x[i] = 2*jt[0].imag();
+        res->i1y[i] = 2*jt[1].imag();
+        res->i1z[i] = 2*jt[2].imag();
+
+        res->r2x[i] = 0;
+        res->r2y[i] = 0;
+        res->r2z[i] = 0;
+
+        res->i2x[i] = 0;
+        res->i2y[i] = 0;
+        res->i2z[i] = 0;
     }
 }
 
@@ -327,9 +405,97 @@ void Propagation<T,U, V, W>::propagateBeam_JM(int start, int stop,
 }
 
 /**
- * Calculate EH on target.
+ * Calculate JMEH on target - PEC version.
  *
- * Calculate the E, H fields on a target surface.
+ * Calculate the J, M currents and E, H fields on a perfectly conducting target surface.
+ *
+ * @param start Index of first loop iteration in parallel block.
+ * @param stop Index of last loop iteration in parallel block.
+ * @param cs Pointer to reflcontainer or reflcontainerf object containing source grids.
+ * @param ct Pointer to reflcontainer or reflcontainerf object containing target grids.
+ * @param currents Pointer to c2Bundle or c2Bundlef object containing currents on source.
+ * @param res Pointer to c2Bundle or c2Bundlef object, to be filled with calculation results.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ * @see c2Bundle
+ * @see c2Bundlef
+ */
+template <class T, class U, class V, class W>
+void Propagation<T,U, V, W>::propagateBeam_JMEH_PEC(int start, int stop,
+                                              V *cs, V *ct,
+                                              W *currents, U *res)
+{
+    // Arrays of Ts
+    std::array<T, 3> point;            // Point on target
+    std::array<T, 3> norms;            // Normal vector at point
+
+    // Arrays of complex Ts to hold return values
+    std::array<std::complex<T>, 3> jt;
+    std::array<std::complex<T>, 3> mt;
+
+    // Return containers
+    std::array<std::array<std::complex<T>, 3>, 2> beam_e_h; // Container for storing fieldAtPoint return
+
+    int jc = 0; // Counter
+
+    for(int i=start; i<stop; i++)
+    {
+
+        point[0] = ct->x[i];
+        point[1] = ct->y[i];
+        point[2] = ct->z[i];
+
+        norms[0] = ct->nx[i];
+        norms[1] = ct->ny[i];
+        norms[2] = ct->nz[i];
+
+        // Calculate total incoming E and H field at point on target
+        beam_e_h = fieldAtPoint(cs, currents, point);
+
+        res->r3x[i] = beam_e_h[0][0].real();
+        res->r3y[i] = beam_e_h[0][1].real();
+        res->r3z[i] = beam_e_h[0][2].real();
+
+        res->i3x[i] = beam_e_h[0][0].imag();
+        res->i3y[i] = beam_e_h[0][1].imag();
+        res->i3z[i] = beam_e_h[0][2].imag();
+
+        res->r4x[i] = beam_e_h[1][0].real();
+        res->r4y[i] = beam_e_h[1][1].real();
+        res->r4z[i] = beam_e_h[1][2].real();
+
+        res->i4x[i] = beam_e_h[1][0].imag();
+        res->i4y[i] = beam_e_h[1][1].imag();
+        res->i4z[i] = beam_e_h[1][2].imag();
+
+        // J_e = 2 n ^ H_inc
+        ut.ext(norms, beam_e_h[1], jt);
+        
+        res->r1x[i] = 2*jt[0].real();
+        res->r1y[i] = 2*jt[1].real();
+        res->r1z[i] = 2*jt[2].real();
+
+        res->i1x[i] = 2*jt[0].imag();
+        res->i1y[i] = 2*jt[1].imag();
+        res->i1z[i] = 2*jt[2].imag();
+
+        // J_m = 0
+
+        res->r2x[i] = 0;
+        res->r2y[i] = 0;
+        res->r2z[i] = 0;
+
+        res->i2x[i] = 0;
+        res->i2y[i] = 0;
+        res->i2z[i] = 0;
+    }
+}
+
+/**
+ * Calculate JMEH on target.
+ *
+ * Calculate the E, H fields and J, M currents on a target surface.
  *
  * @param start Index of first loop iteration in parallel block.
  * @param stop Index of last loop iteration in parallel block.
@@ -909,7 +1075,7 @@ void Propagation<T, U, V, W>::parallelProp_JM(V *cs, V *ct,
 
         //std::cout << final_step << std::endl;
 
-        threadPool[n] = std::thread(&Propagation::propagateBeam_JM,
+        threadPool[n] = std::thread(&Propagation::propagateBeam_JM_PEC,
                                     this, n * step, final_step,
                                     cs, ct, currents, res);
     }
@@ -994,7 +1160,7 @@ void Propagation<T, U, V, W>::parallelProp_JMEH(V *cs, V *ct,
             final_step = (n+1) * step;
         }
 
-        threadPool[n] = std::thread(&Propagation::propagateBeam_JMEH,
+        threadPool[n] = std::thread(&Propagation::propagateBeam_JMEH_PEC,
                                     this, n * step, final_step,
                                     cs, ct, currents, res);
     }

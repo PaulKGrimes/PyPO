@@ -1210,6 +1210,9 @@ def check_runPODict(runPODict, elements, fields, currents, scalarfields, frames,
     
     if "mode" not in runPODict:
         errStr += errMsg_field("mode", "runPODict")
+        
+    if "epsilon" not in runPODict:
+        runPODict["epsilon"] = 1.0
    
     else:
         if runPODict["mode"] not in PO_modelist:
