@@ -132,47 +132,26 @@ class fields(resContainer):
 
         super().__init__(Ex, Ey, Ez, Hx, Hy, Hz, restype="EH")
 
-class po_currents(object):
+class po_grids(object):
     """!
-    Wrapper for making a PO currents object.
+    Structure for storing a PO grids object
     
-    This object contains all of the information required to evaluate the fields due to the currents on
-    a scatterer at some target point.
+    This object contains the grid and weights information required to carry out Gauss-Legendre quadrature integration
+    over a scatterer.  The grid is non-uniform, as required for G-L quadrature.
     
-    The electric and magnetic currents in this object differ from those in the currents container
-    in that they are defined on an irregular grid suitable for Gauss-Legendre quadrature integration.
-    
-    The stored weights are either a 1d array for uv grids, representing the weights in the rho integration,
-    or an n x 2 array for xy grids, representing the weights for integraton in the x and y directions.
+    The stored weights are a pair of two arrays, representing the weights for integration in the a (x/u) and b (y/v)
+    directions.
 
     @ingroup public_api_types
     """
 
-    def __init__(self, x, y, z, nx, ny, nz, area, weights, Jx, Jy, Jz, Mx, My, Mz, mode='uv'):
+    def __init__(self):
         """!
         Constructor. Takes PO components and assigns them to member variables.
-        
-        @param x        Grid x-position.
-        @param y        Grid y-position.
-        @param z        Grid z-position.
-        @param nx       Surface normal x-component.
-        @param ny       Surface normal y-component.
-        @param nz       Surface normal z-component.
-        @param area     Surface element area.
-        @param weights  Weights to use in quadrature integration. 
-        @param Jx       J-current x-component.
-        @param Jy       J-current y-component.
-        @param Jz       J-current z-component.
-        @param Mx       M-current x-component.
-        @param My       M-current y-component.
-        @param Mz       M-current z-component.
-        @param mode     Surface grid definition mode (string).
         """
-        self.grid = reflGrids(x, y, z, nx, ny, nz, area)
-        self.weights = scalarfield(weights)
-        
-        self.currents = currents(Jx, Jy, Jz, Mx, My, Mz)
-        self.mode = mode
+        self.grid = None
+        self.weights = None
+        self.mode = None
         
     def setMeta(self, surf, k):
         """!
@@ -184,6 +163,17 @@ class po_currents(object):
 
         self.surf = surf 
         self.k = k
+        
+    def po_points(self):
+        """!
+        Return the number of PO points in each axis of integration.
+        
+        @returns tuple Pair of integers giving the order of each axis of integration.
+        """
+        if self.weights:
+            return (len(self.weights[0]), len(self.weights[1]))
+        else:
+            return None
 
 
 class rfield(object):

@@ -1271,7 +1271,7 @@ class MainWidget(QWidget):
                     propBeamDict["exp"] = "bwd"
             
             chk.check_runPODict(propBeamDict, self.stm.system.keys(), self.stm.fields.keys(), self.stm.currents.keys(),
-                            self.stm.scalarfields.keys(), self.stm.frames.keys(), self.clog)
+                            self.po_currents.keys(), self.stm.scalarfields.keys(), self.stm.frames.keys(), self.clog)
         
             subStr = "scalar field" if propBeamDict["mode"] == "scalar" else propBeamDict["mode"]
 

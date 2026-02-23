@@ -66,6 +66,7 @@ class System(object):
         self.frames = {}
         self.fields = {}
         self.currents = {}
+        self.po_grids = {}
         self.po_currents = {}
         self.scalarfields = {}
         self.groups = {}
@@ -843,7 +844,7 @@ class System(object):
                       spheric : bool = True
                       ) -> PTypes.reflGrids:
         """!
-        Generate reflector grids and normals.
+        Generate uniform reflector grids and normals.
         
         Evaluate a stored reflector dictionary and return the x, y, z grids, area and normals.
         The outputs are grouped together in a grids object.
@@ -862,6 +863,38 @@ class System(object):
         PChecks.check_elemSystem(name, self.system, self.clog, extern=True)
         grids = BRefl.generateGrid(self.system[name], transform, spheric)
         return grids
+    
+    def generatePOGrids(self, 
+                      name : str,
+                      transform :bool = True
+                      ) -> PTypes.reflGrids:
+        """!
+        Generate reflector grids and normals for use in PO calculations.
+        
+        Evaluate a stored reflector dictionary and return the x, y, z grids, area and normals.
+        The outputs are grouped together in a grids object.
+        
+        The grid points are calculated to give spacings that form the abscissas for 
+        Gauss-Legendre quadrature integration (xy grids, uvgrids over a partial v range,
+        and u axis for uv grids over the complete 2pi v range).  Additionally, the weights for 
+        Gauss-Legendre quadrature are calculated and returned for each axis of integration.
+        
+        For integration over a complete 2pi v range, trapezoidal integration is used instead,
+        and the weights are uniform.
+        
+        @ingroup public_api_reflmeths
+        
+        @param name Name of reflector to be gridded.
+        @param transform Apply internal transformation matrix to reflector.
+        
+        @return po_grids A po_currents object containing the grids, area and normals, and the weights.
+        
+        @see po_grids
+        """
+
+        PChecks.check_elemSystem(name, self.system, self.clog, extern=True)
+        po_grids = BRefl.generatePOGrid(self.system[name], transform)
+        return po_grids
     
     def saveSystem(self, name : str):
         """!
@@ -1111,7 +1144,7 @@ class System(object):
         """!
         Instantiate a PO propagation. 
         
-        Stores desired output in the internal fields and/or internal currents dictionary.
+        Stores desired output in the internal po_currents, fields and/or internal currents dictionary.
         If the 'EHP' mode is selected, the reflected Poynting frame is stored in the internal frame dictionary.
         
         @ingroup public_api_po
@@ -1124,7 +1157,7 @@ class System(object):
         self.clog.work("*** Starting PO propagation ***")
        
         PChecks.check_runPODict(runPODict, self.system.keys(), self.fields.keys(), self.currents.keys(),
-                    self.scalarfields.keys(), self.frames.keys(), self.clog)
+                    self.po_currents.keys(), self.scalarfields.keys(), self.frames.keys(), self.clog)
 
         _runPODict = self.copyObj(runPODict)
 
@@ -1159,7 +1192,13 @@ class System(object):
 
         dtime = time.time() - start_time
         
-        if _runPODict["mode"] == "JM":
+        if _runPODict["mode"] == "PO":
+            out[0].setMeta(_runPODict["t_name"], _runPODict["k"])
+            out[1].setMeta(_runPODict["t_name"], _runPODict["k"])
+            self.po_grids[_runPODict["name_PO"]] = out[1]
+            self.po_currents[_runPODict["name_PO"]] = out[0]
+            
+        elif _runPODict["mode"] == "JM":
             out.setMeta(_runPODict["t_name"], _runPODict["k"])
             self.currents[_runPODict["name_JM"]] = out
         

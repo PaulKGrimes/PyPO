@@ -25,5 +25,11 @@ extern "C"
     
     PYPO_DLL void generateGridf(reflparamsf refl, reflcontainerf *container,
                       bool transform=true, bool spheric=true);
+
+    PYPO_DLL void generateGrid(reflparams refl, reflcontainer *container, weightscontainer *weights,
+                      bool transform=true);
+    
+    PYPO_DLL void generateGridf(reflparamsf refl, reflcontainerf *container,  weightscontainerf *weights,
+                      bool transform=true);
 }
 #endif

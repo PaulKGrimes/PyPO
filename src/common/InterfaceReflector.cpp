@@ -135,6 +135,119 @@ void Parabola_xy(T *parabola, U xu_lo, U xu_up, U yv_lo,
 }
 
 /**
+ * Generate a table of the n'th order Gauss-Legendre 
+ * abscissa, weights and widths over the domain from x_lo to x_hi
+ * 
+ * @param i Point number, int
+ * @param ncx Order of the integration, int
+ * @param x_lo Lower limit of the integration, double/float
+ * @param x_hi Upper limit of the integration, double/float
+ */
+template<typename T>
+T make_gauss_table(int n, T x_lo, T x_hi)
+{
+
+}
+
+/**
+ * Generate the i'th Gauss-Legendre weight for ncx'th order Gauss-Legendre quadrature
+ * over the domain from x_lo to x_hi
+ * 
+ * @param i Point number, int
+ * @param ncx Order of the integration, int
+ * @param x_lo Lower limit of the integration, double/float
+ * @param x_hi Upper limit of the integration, double/float
+ */
+template<typename T>
+T gauss_weight(int i, int ncx, T x_lo, T x_hi)
+{
+    T weight = legendre_n(i, ncx)
+    return weight;
+}
+
+/**
+ * Generate paraboloid from xy parametrization on a PO grid.
+ *
+ * Generate a paraboloid using an xy parametrization over a grid suitable for Gauss-Legendre quadrature. 
+ * Also generates the normal vectors and area elements, and the weights use for PO integration.
+ *      Applies specified transformations as well, if enabled.
+ *
+ * @param parabola Pointer to reflcontainer or reflcontainerf object.
+ * @param weights Pointer to the weightscontainer or weighstcontainerf object.
+ * @param xu_lo Lower limit on x co-ordinate, double/float.
+ * @param xu_up Upper limit on x co-ordinate, double/float.
+ * @param yv_lo Lower limit on y co-ordinate, double/float.
+ * @param yv_up Upper limit on y co-ordinate, double/float.
+ * @param xcenter Center x co-ordinate of xy region.
+ * @param ycenter Center y co-ordinate of xy region.
+ * @param a Scaling factor along x-axis.
+ * @param b Scaling factor along y-axis.
+ * @param ncx Number of cells along x-axis.
+ * @param ncy Number of cells along y-axis.
+ * @param nfac Flip normal vectors.
+ * @param mat Array of 16 double/float, transformation matrix.
+ * @param transform Whether or not to apply transformation to reflector.
+ *
+ * @see reflcontainer
+ * @see reflcontainerf
+ */
+template<typename T, typename W, typename U>
+void POParabola_xy(T *parabola, W *weights, U xu_lo, U xu_up, U yv_lo,
+                U yv_up, U xcenter, U ycenter, U a, U b, int ncx, int ncy, int nfac,
+                U mat[16], bool transform)
+{
+    U x;
+    U y;
+    U weight_x;
+    U weight_y;
+
+    U norm;
+
+    Utils<U> ut;
+
+    std::array<U, 3> inp, out;
+
+    for (int i=0; i < ncx; i++)
+    {
+        x_gauss_table T = make_gauss_table(x, ncx, xu_lo, xu_hi);
+        x = x_gauss_table->x[i];
+        weights->weight_xu[i] = x_gauss_table->weight[i];
+        dx = x_gauss_table->dx[i];
+
+        for (int j=0; j < ncy; j++)
+        {
+            y = y_gauss_table->x[j];
+            weights->weight_yv[i] = y_gauss_table->weight[j];
+            dy = y_gauss_table->dx[j];
+            int idx = i*ncy + j;
+
+            parabola->x[idx] = x;
+            parabola->y[idx] = y;
+            parabola->z[idx] = x*x / (a*a) + y*y / (b*b);
+
+            parabola->nx[idx] = -2 * x / (a*a);
+            parabola->ny[idx] = -2 * y / (b*b);
+            parabola->nz[idx] = 1;
+
+            norm = sqrt(parabola->nx[idx]*parabola->nx[idx] +
+                        parabola->ny[idx]*parabola->ny[idx] + 1);
+
+            parabola->nx[idx] = nfac * parabola->nx[idx] / norm;
+            parabola->ny[idx] = nfac * parabola->ny[idx] / norm;
+            parabola->nz[idx] = nfac * parabola->nz[idx] / norm;
+
+            parabola->area[idx] = norm * dx * dy;
+
+            if (transform)
+            {
+                transformGrids<T, U>(parabola, idx, inp, out, &ut, mat);
+            }
+        }
+    }
+}
+
+
+/**
  * Generate paraboloid from uv parametrization.
  *
  * Generate a paraboloid using a uv parametrization. Also generates the normal vectors and area elements.
@@ -963,6 +1076,108 @@ void generateGrid(reflparams refl, reflcontainer *container, bool transform, boo
     {
         Plane_AoE<reflcontainer, double>(container, xu_lo, xu_up, yv_lo,
                                         yv_up, xcenter, ycenter, ncx, ncy, refl.transf, transform, spheric);
+    }
+
+    if (refl.rms > 0)
+    {
+        add_surferr_uncorr<reflparams, double, reflcontainer>(refl, container);
+    }
+}
+
+/**
+ * Generate reflector/far-field grids.
+ * 
+ * Generate x, y, z grids and corresponding normal vectors nx, ny, nz. Also generates area elements.
+ *      For far-field grids, generates Az and El grid, leaves z-container at 0 values.
+ *
+ * @param refl A reflparams object containing reflector parameters.
+ * @param container Pointer to reflcontainer object.
+ * @param transform Whether or not to apply transformation to reflector.
+ * @param spheric Whether or not to convert a far-field grid to spherical co-ordinates, for plotting purposes.
+ *
+ * @see reflparams
+ * @see reflcontainer
+ */
+void generatePOGrid(reflparams refl, reflcontainer *container, weightscontainer *weights, bool transform)
+{
+    double xu_lo = refl.lxu[0];
+    double xu_up = refl.lxu[1];
+    double yv_lo = refl.lyv[0];
+    double yv_up = refl.lyv[1];
+
+    double xcenter = refl.gcenter[0];
+    double ycenter = refl.gcenter[1];
+
+    double ecc_uv = refl.ecc_uv;
+    double rot_uv = refl.rot_uv * M_PI / 180;
+
+    double a = refl.coeffs[0];
+    double b = refl.coeffs[1];
+    double c = refl.coeffs[2];
+
+    int ncx = refl.po_points[0];
+    int ncy = refl.po_points[1];
+
+    int nfac = 1;
+
+    if (refl.flip)
+    {
+        nfac = -1;
+    }
+
+    if (refl.gmode == 0)
+    {
+        if (refl.type == 0)
+        {
+            POParabola_xy<reflcontainer, weightscontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, a, b, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 1)
+        {
+            POHyperbola_xy<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, a, b, c, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 2)
+        {
+            POEllipse_xy<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, a, b, c, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 3)
+        {
+            POPlane_xy<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, ncx, ncy, nfac, refl.transf, transform);
+        }
+    }
+
+    else if (refl.gmode == 1)
+    {
+        if (refl.type == 0)
+        {
+
+            POParabola_uv<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, ecc_uv, rot_uv, a, b, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 1)
+        {
+            POHyperbola_uv<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, ecc_uv, rot_uv, a, b, c, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 2)
+        {
+            POEllipse_uv<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, ecc_uv, rot_uv, a, b, c, ncx, ncy, nfac, refl.transf, transform);
+        }
+
+        else if (refl.type == 3)
+        {
+            POPlane_uv<reflcontainer, double>(container, weights, xu_lo, xu_up, yv_lo,
+                                            yv_up, xcenter, ycenter, ecc_uv, rot_uv, ncx, ncy, nfac, refl.transf, transform);
+        }
     }
 
     if (refl.rms > 0)

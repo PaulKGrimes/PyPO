@@ -53,7 +53,7 @@ class Test_SystemPO_RT(unittest.TestCase):
             runPODict = self._get_runPODictJM(TestTemplates.GPOfield["name"], TestTemplates.paraboloid_man_xy["name"],"test_JM", device=dev, direction=direction)
             
             check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                        self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                        self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
                 
             func(self.s, runPODict)
             self.assertEqual(type(self.s.currents["test_JM"]), pypotypes.currents) 
@@ -67,7 +67,7 @@ class Test_SystemPO_RT(unittest.TestCase):
             runPODict = self._get_runPODictEH(TestTemplates.GPOfield["name"], TestTemplates.paraboloid_man_xy["name"],"test_EH", device=dev, direction=direction)
             
             check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                        self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                        self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
                 
             func(self.s, runPODict)
             self.assertEqual(type(self.s.fields["test_EH"]), pypotypes.fields)
@@ -81,7 +81,7 @@ class Test_SystemPO_RT(unittest.TestCase):
             runPODict = self._get_runPODictJMEH(TestTemplates.GPOfield["name"], TestTemplates.paraboloid_man_xy["name"], "test_JM", "test_EH", device=dev, direction=direction)
             
             check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                        self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                        self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
                 
             func(self.s, runPODict)
             self.assertEqual(type(self.s.currents["test_JM"]), pypotypes.currents)
@@ -97,7 +97,7 @@ class Test_SystemPO_RT(unittest.TestCase):
         runPODict = self._get_runPODictEHP(TestTemplates.GPOfield["name"], TestTemplates.paraboloid_man_xy["name"],"test_EH", "test_P", device=dev)
             
         check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                    self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                    self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
         
         funcPO(self.s, runPODict)
         self.assertEqual(type(self.s.fields["test_EH"]), pypotypes.fields)
@@ -119,7 +119,7 @@ class Test_SystemPO_RT(unittest.TestCase):
         runPODict = self._get_runPODictFF(TestTemplates.GPOfield["name"], TestTemplates.getPlaneList()[-1]["name"], "test_EH", device=dev)
         
         check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                    self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                    self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
         
         func(self.s, runPODict)
         self.assertEqual(type(self.s.fields["test_EH"]), pypotypes.fields)
@@ -132,7 +132,7 @@ class Test_SystemPO_RT(unittest.TestCase):
         runPODict = self._get_runPODictScalar(TestTemplates.GPOfield["name"], TestTemplates.paraboloid_man_xy["name"],"test_EH", device=dev)
         
         check_runPODict(runPODict, self.s.system.keys(), self.s.fields.keys(), self.s.currents.keys(),
-                    self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
+                    self.s.po_currents.keys(), self.s.scalarfields.keys(), self.s.frames.keys(), self.s.clog)
         
         func(self.s, runPODict)
         self.assertEqual(type(self.s.scalarfields["test_EH"]), pypotypes.scalarfield)

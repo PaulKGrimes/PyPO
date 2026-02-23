@@ -28,7 +28,7 @@ reflDict = {
         "ecc_uv"    : "Eccentricity of uv-generated xy_grid (uv only)",
         "rot_uv"    : "Position angle of uv-generated xy grid (uv only)",
         "gridsize"  : "Number of cells along x(u) and y(v) axes of output fields (Numpy array of 2 ints)",
-        "po_gridsize" : "Number of points along the x(u) and y(v) axes to use in PO calculations (Numpy array of 2 ints)"
+        "po_points" : "Number of points along the x(u) and y(v) axes to use in PO calculations (Numpy array of 2 ints)"
         }
 
 ##
@@ -134,7 +134,7 @@ runPODict = {
         "nThreads"      : "Number of CPU/GPU threads (int)",
         "device"        : "Device to use for calculation",
         "mode"          : "Determine return object (string)",
-        "name_PO"       : "Name of output PO currents, to be used in next PO calculation (string). Will default to '{t_name}_PO'",
+        "name_PO"       : "Name of output PO currents and PO grids, to be used in next PO calculation (string). Will default to '{t_name}'",
         "name_JM"       : "Name of output currents (string). Only relevant if 'mode' is set to JM, POJM, JMEH or POJMEH.",
         "name_EH"       : "Name of output fields (string). Only relevant if 'mode' is set to EH, POEH, JMEH, POJMEH, EHP, POEHP or FF.",
         "name_field"    : "Name of output scalarfield (string). Only relevant if 'mode' is set to scalar."

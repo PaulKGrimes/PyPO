@@ -299,6 +299,7 @@ def allfill_reflparams(inp, reflparams_py, ct_t):
     inp.lyv = (ct_t * 2)()
     inp.gcenter = (ct_t * 2)()
     inp.n_cells = (ctypes.c_int * 2)()
+    inp.po_points = (ctypes.c_int * 2)()
 
     for i in range(2):
         if reflparams_py["gmode"] == 0:
@@ -315,6 +316,7 @@ def allfill_reflparams(inp, reflparams_py, ct_t):
 
         inp.gcenter[i] = ct_t(reflparams_py["gcenter"][i])
         inp.n_cells[i] = ctypes.c_int(reflparams_py["gridsize"][i])
+        inp.po_points[i] = ctypes.c_int(reflparams_py["po_points"][i])
 
     inp.flip = ctypes.c_bool(reflparams_py["flip"])
     inp.gmode = ctypes.c_int(reflparams_py["gmode"])
@@ -551,6 +553,22 @@ def creflToObj(res, shape, np_t):
     area = np.ctypeslib.as_array(res.area, shape=shape).astype(np_t)
     out = PTypes.reflGrids(x, y, z, nx, ny, nz, area)
     return out
+
+def cweightsToObj(res, po_points, np_t):
+    """!
+    Convert a PO weights struct to a pair of numpy arrays.
+
+    @param res The weights returned by generatePOGrid
+    @param po_points An 2 element array holding the length of the two weights arrays
+    @param np_t Type of weights
+
+    @returns out The weights as a pair of numpy arrays
+    """
+
+    weights_a = np.ctypeslib.as_array(res.a, shape=po_points[0]).astype(np_t)
+    weights_b = np.ctypeslib.as_array(res.b, shape=po_points[1]).astype(np_t)
+
+    return [weights_a, weights_b]
 
 def frameToObj(res, np_t, shape):
     """!

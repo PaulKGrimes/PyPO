@@ -14,7 +14,7 @@ import PyPO.WorldParam as world
 from PyPO.Enums import FieldComponents, CurrentComponents, AperShapes, Objects
 
 nThreads_cpu = os.cpu_count() - 1 if os.cpu_count() > 1 else 1
-PO_modelist = ["JM", "EH", "JMEH", "EHP", "FF", "scalar"]
+PO_modelist = ["PO", "JM", "EH", "JMEH", "EHP", "FF", "scalar"]
 
 def getIndex(name, nameList):
     """!
@@ -748,6 +748,23 @@ def check_ElemDict(elemDict, nameList, clog):
 
     else:
         errStr += errMsg_field("gridsize", elemDict["name"])
+        
+    if "po_points" in elemDict:
+        errStr += block_ndarray("po_points", elemDict, (2,))
+
+        if not (isinstance(elemDict["po_points"][0], np.int64) or isinstance(elemDict["po_points"][0], np.int32)):
+            errStr += errMsg_type("po_points[0]", type(elemDict["po_points"][0]), elemDict["name"], [np.int64, np.int32])
+
+        if not (isinstance(elemDict["po_points"][1], np.int64) or isinstance(elemDict["gridsize"][1], np.int32)):
+            errStr += errMsg_type("po_points[1]", type(elemDict["po_points"][1]), elemDict["name"], [np.int64, np.int32])
+   
+        if elemDict["po_points"][0] < 0 or elemDict["po_points"][1] < 0:
+            clog.warning(f"Negative po_points encountered in {elemDict['name']}. Changing sign.")
+            elemDict["po_points"] = np.absolute(elemDict["po_points"])
+
+    else:
+        errStr += errMsg_field("po_points", elemDict["name"])
+
 
 
     if errStr:
@@ -1184,7 +1201,7 @@ def check_GPODict(GPODict, nameList, clog):
             clog.error(err)
         raise InputPOError()
 
-def check_runPODict(runPODict, elements, fields, currents, scalarfields, frames, clog):
+def check_runPODict(runPODict, elements, fields, currents, po_currents, scalarfields, frames, clog):
     """!
     Check a physical optics propagation input dictionary.
 
@@ -1224,6 +1241,16 @@ def check_runPODict(runPODict, elements, fields, currents, scalarfields, frames,
         if "s_scalarfield" in runPODict:
             errStr = check_scalarfieldSystem(runPODict["s_scalarfield"], scalarfields, clog, errStr)
     
+        if runPODict["mode"] == "PO":
+            if "name_PO" not in runPODict:
+                runPODict["name_po"] = runPODict["t_name"]
+        
+            num = getIndex(runPODict["name_PO"], po_currents)
+
+            if num > 0:
+                runPODict["name_PO"] = runPODict["name_PO"] + "_{}".format(num)
+                
+
         if runPODict["mode"] == "JM":
             if "name_JM" not in runPODict:
                 errStr += errMsg_field("name_JM", "runPODict")

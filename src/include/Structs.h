@@ -115,6 +115,7 @@ struct reflparams {
     double *lyv;        /**<array of 2 double. Contains lower and upper y/v limits.*/
 
     int *n_cells;       /**<array of 2 int. Contains gridsize along x/u and y/v axes.*/
+    int *po_points;     /**<array of 2 int. Contains order of the PO integrations along x/u and y/v axes.*/
 
     bool flip;          /**<Whether or not to flip normal vectors. Only relevant for quadric surfaces.*/
     int gmode;          /**<How to grid surface. 0 is "xy", 1 is "uv" and 2 is "AoE".*/
@@ -144,6 +145,13 @@ struct reflcontainer {
     double *nz;     /**<array of double. Contains normal vector component along z-axis.*/
 
     double *area;     /**<array of double. Contains area element size of surface.*/
+};
+
+/** Object containing the integration weights for a reflector surface */
+struct weightscontainer {
+    int size;
+    double *weights_a;
+    double *weights_b;
 };
 
 /** Object containing ray evaluation points and corresponding direction vectors.
@@ -305,6 +313,7 @@ struct reflparamsf {
     float *lyv;        /**<array of 2 float. Contains lower and upper y/v limits.*/
 
     int *n_cells;       /**<array of 2 int. Contains gridsize along x/u and y/v axes.*/
+    int *po_points;     /**<array of 2 int. Contains order of the PO integrations along x/u and y/v axes.*/
 
     bool flip;          /**<Whether or not to flip normal vectors. Only relevant for quadric surfaces.*/
     int gmode;          /**<How to grid surface. 0 is "xy", 1 is "uv" and 2 is "AoE".*/
@@ -334,6 +343,14 @@ struct reflcontainerf {
     float *nz;     /**<array of float. Contains normal vector component along z-axis.*/
 
     float *area;     /**<array of float. Contains area element size of surface.*/
+};
+
+
+/** Object containing the integration weights for a reflector surface */
+struct weightscontainerf {
+    int size;
+    float *weights_xu;
+    float *weights_yv;
 };
 
 /** Object containing ray evaluation points and corresponding direction vectors.
