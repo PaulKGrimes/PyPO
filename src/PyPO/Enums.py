@@ -5,6 +5,8 @@ File containing enum types for PyPO methods.
 
 from enum import Enum
 
+from numpy import pi
+
 class CustomEnum(Enum):
     def __str__(self):
         return self.name
@@ -98,9 +100,16 @@ class Units(float, Enum):
     MM      : Set unit to millimeters (default unit)\n
     UM      : Set unit to micrometers\n
     NM      : Set unit to nanometers\n
+    IN      : Set unit to inches\n
+    MIL/THOU: Set unit to thousandths of an inch\n
+    UIN     : Set unit to microinches\n
+    FT      : Set unit to feet\n
     DEG     : Set unit to degrees. Use for far-fields only\n
     AM      : Set unit to arcminutes. Use for far-fields only\n
-    AS      : Set unit to arcseconds. Use for far-fields only
+    AS      : Set unit to arcseconds. Use for far-fields only\n
+    RAD     : Set unit to radians. Use for far-fields only\n
+    MRAD    : Set unit to milliradians. Use for far-fields only\n
+    URAD    : Set unit to microradians. Use for far-fields only\n
 
     @ingroup public_api_argopts
     """
@@ -109,9 +118,17 @@ class Units(float, Enum):
     MM = 1e-3*M
     UM = 1e-6*M
     NM = 1e-9*M
+    IN = 25.4*MM
+    MIL = IN*1e-3
+    THOU = IN*1e-3
+    UIN = IN*1e-6
+    FT = 12*IN
     DEG = 1
     AM = 60
     AS = 3600
+    RAD = 180/pi*DEG
+    MRAD = RAD*1e-3
+    URAD = RAD*1e-6
 
 class Scales(Enum):
     """!
