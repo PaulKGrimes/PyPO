@@ -123,8 +123,7 @@ Evaluation of the surface integral in the calculation of the incident field on a
 For moderately large surfaces and non-paraxial angles between the source surface normal and the target point, the complex phase of the 
 integrands oscilates rapidly due to both the Green's function's \f$e^{-i k R}\f$ term, and to phase wraps in the source current distribution.
 
-The integral is performed using the trapezoidal method first over the \f$y\f$ or \f$\phi\f$ directions, followed by the \f$x\f$ or \f$\rho\f$ directions. 
-For a closed integration range in the \f$\phi\f$, the first point is also used in the calculation of the final trapezoidal element.
+The integral is performed using the rectangular method first over the \f$y\f$ or \f$\phi\f$ directions, followed by the \f$x\f$ or \f$\rho\f$ directions. 
 
 Performing the integration in this order allows for the future use of lower numbers of PO points near the center of a polar grid, 
 where the \f$\phi\f$ grid is oversampled.
