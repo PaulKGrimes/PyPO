@@ -27,7 +27,7 @@ class Test_Plotting(unittest.TestCase):
         self.s = TestTemplates.getSystemWithReflectors()
         self.s.setOverride(False)
 
-    @params(Scales.dB, Scales.LIN)
+    @params(*list(Scales))
     def test_plotBeamCut(self, scale):
         fig, ax = self.s.plotBeamCut(TestTemplates.GPOfield['name'], FieldComponents.Ex, center=False, align=False, ret=True, scale=scale)
 
@@ -36,8 +36,7 @@ class Test_Plotting(unittest.TestCase):
         
         close('all')
 
-    @params(Projections.xy, Projections.yz, Projections.zx,
-            Projections.yx, Projections.zy, Projections.xz)
+    @params(*list(Projections))
     def test_plotBeam2D(self, project):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -89,7 +88,6 @@ class Test_Plotting(unittest.TestCase):
         self.assertEqual(type(ax), Axes3D)
 
         close('all')
-
             
     def test_plotSystem(self):
         fig, ax = self.s.plotSystem(ret=True)
@@ -109,7 +107,6 @@ class Test_Plotting(unittest.TestCase):
         self.assertEqual(type(axRT), Axes3D)
 
         close('all')
-        
         
     def test_plotGroup(self):
         self.s.groupElements('testGroup', 
