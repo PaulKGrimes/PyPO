@@ -10,12 +10,6 @@ from numpy import pi
 class CustomEnumScalar(Enum):
     def __str__(self):
         return self.name
-    
-    def __rmul__(self, other):
-        return other * self.value
-    
-    def __rtruediv__(self, other):
-        return other / self.value
 
 class CustomEnumString(Enum):
     def __str__(self):
@@ -34,7 +28,7 @@ class CustomEnumTuple(Enum):
     def __rmul__(self, other):
         return other * self.value[0]
     
-    def __rtruediv__(self, other):
+    def rdiv(self, other):
         return other / self.value[0]
 
 class FieldComponents(CustomEnumScalar):

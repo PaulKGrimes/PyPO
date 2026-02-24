@@ -1904,9 +1904,7 @@ class System(object):
         self.deleteSnap(name_surf, "_")
 
         self.setLoggingVerbosity(verbose=verbosity_init)
-        print(h_cut.shape, h_strip.shape)
 
-        #print("hi")
         if full_output:
             return h_cut, e_cut, h_strip, e_strip, hx_edges_interp, hy_edges_interp, ex_edges_interp, ey_edges_interp
    
@@ -1957,7 +1955,6 @@ class System(object):
 
         E_cut, H_cut, E_strip, H_strip = self.calcBeamCuts(name_field, comp, center=center, align=align, scale=scale)
 
-        print("hahahaha")
         if comp_cross is not FieldComponents.NONE:
             cr45_cut, cr135_cut, cr45_strip, cr135_strip = self.calcBeamCuts(name_field, comp_cross, phi=45, align=False, center=False, norm="Ex")
 
@@ -2233,7 +2230,7 @@ class System(object):
             obj_interp.setMeta(obj_out.surf + "_interp", obj_out.k)
             self.currents[name + "_interp"] = obj_interp
 
-    def plotBeam2D(self, name_obj : str, comp : FieldComponents = FieldComponents.NONE, contour : str = None, 
+    def plotBeam2D(self, name_obj : str, comp : fieldOrCurrentComponents = FieldComponents.Ex, contour : str = None, 
                     contour_comp : fieldOrCurrentComponents  = FieldComponents.NONE,
                     vmin : float = None, vmax : float = None, levels : contourLevels = None, 
                     show : bool = True, amp_only : bool = False, save : bool = False, norm : bool = True,
@@ -2315,7 +2312,6 @@ class System(object):
                         vmin, vmax, levels, amp_only,
                         norm, aperDict, scale, project,
                         units, titleA, titleP, unwrap_phase)
-
         if ret:
             return fig, ax
 
