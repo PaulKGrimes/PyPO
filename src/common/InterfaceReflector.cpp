@@ -138,32 +138,17 @@ void Parabola_xy(T *parabola, U xu_lo, U xu_up, U yv_lo,
  * Generate a table of the n'th order Gauss-Legendre 
  * abscissa, weights and widths over the domain from x_lo to x_hi
  * 
- * @param i Point number, int
+ * @param *gauss_table Pointer to output gauss table, nx3 array of T
  * @param ncx Order of the integration, int
  * @param x_lo Lower limit of the integration, double/float
  * @param x_hi Upper limit of the integration, double/float
  */
 template<typename T>
-T make_gauss_table(int n, T x_lo, T x_hi)
+void make_gauss_table(T *gauss_table, int n, T x_lo, T x_hi)
 {
-
+    
 }
 
-/**
- * Generate the i'th Gauss-Legendre weight for ncx'th order Gauss-Legendre quadrature
- * over the domain from x_lo to x_hi
- * 
- * @param i Point number, int
- * @param ncx Order of the integration, int
- * @param x_lo Lower limit of the integration, double/float
- * @param x_hi Upper limit of the integration, double/float
- */
-template<typename T>
-T gauss_weight(int i, int ncx, T x_lo, T x_hi)
-{
-    T weight = legendre_n(i, ncx)
-    return weight;
-}
 
 /**
  * Generate paraboloid from xy parametrization on a PO grid.
@@ -198,8 +183,8 @@ void POParabola_xy(T *parabola, W *weights, U xu_lo, U xu_up, U yv_lo,
 {
     U x;
     U y;
-    U weight_x;
-    U weight_y;
+    U dx;
+    U dy;
 
     U norm;
 
@@ -207,18 +192,23 @@ void POParabola_xy(T *parabola, W *weights, U xu_lo, U xu_up, U yv_lo,
 
     std::array<U, 3> inp, out;
 
+    T x_gauss_table[ncx][3]
+    make_gauss_table(*x_gauss_table, ncx, xu_lo, xu_hi);
+    T y_gauss_table[ncy][3]
+    make_gauss_table(*y_gauss_table, ncy, yv_lo, yv_hi);
+
     for (int i=0; i < ncx; i++)
     {
-        x_gauss_table T = make_gauss_table(x, ncx, xu_lo, xu_hi);
-        x = x_gauss_table->x[i];
-        weights->weight_xu[i] = x_gauss_table->weight[i];
-        dx = x_gauss_table->dx[i];
+        
+        x = x_gauss_table[i][0];
+        weights->weight_xu[i] = x_gauss_table[i][1]
+        dx = x_gauss_table[i][2]
 
         for (int j=0; j < ncy; j++)
         {
-            y = y_gauss_table->x[j];
-            weights->weight_yv[i] = y_gauss_table->weight[j];
-            dy = y_gauss_table->dx[j];
+            y = y_gauss_table[j][0];
+            weights->weight_yv[i] = y_gauss_table[j][1];
+            dy = y_gauss_table[j][2];
             int idx = i*ncy + j;
 
             parabola->x[idx] = x;
