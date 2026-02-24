@@ -126,8 +126,7 @@ class Test_Plotting(unittest.TestCase):
         close('all')
         
         
-    @params(Projections.xy, Projections.yz, Projections.zx,
-            Projections.yx, Projections.zy, Projections.xz)
+    @params(*list(Projections))
     def test_plotRTframe(self, project):
         for frameName in [TestTemplates.TubeRTframe['name'], TestTemplates.GaussRTframe['name']]:
             fig = self.s.plotRTframe(frameName, ret=True, project=project)

@@ -5,7 +5,7 @@ File containing enum types for PyPO methods.
 
 from enum import Enum
 
-from numpy import pi
+import numpy as np
 
 class CustomEnumScalar(Enum):
     def __str__(self):
@@ -147,7 +147,7 @@ class Units(CustomEnumTuple):
     DEG = (1., "angular")
     AM = (60., "angular")
     AS = (3600., "angular")
-    RAD = (180/pi*DEG[0], "angular")
+    RAD = (180/np.pi*DEG[0], "angular")
     MRAD = (RAD[0]*1e-3, "angular")
     URAD = (RAD[0]*1e-6, "angular")
 

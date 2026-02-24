@@ -463,8 +463,11 @@ class System(object):
         @param keep_pol Keep polarisation of a field/current defined on the surface, if present.
         """
         PChecks.check_array(rotation, self.clog)
+        rotation = self.copyObj(rotation).astype(np.float64)
+        
         if pivot is not None:
             PChecks.check_array(pivot, self.clog)
+            pivot = self.copyObj(pivot).astype(np.float64)
         
         if obj == Objects.ELEMENT:
             PChecks.check_elemSystem(name, self.system, self.clog, extern=True)
@@ -575,57 +578,57 @@ class System(object):
         @param obj Whether the name corresponds to a single element, group, or frame. Fields and currents are translated by translating the associated surface. Choose from Objects enum.
         @param mode Apply translation relative ('relative') to current position, or move to specified position ('absolute').
         """
-
-        _translation = self.copyObj(translation)
-
+        
         PChecks.check_array(translation, self.clog)
+
+        translation = self.copyObj(translation).astype(np.float64)
         
         if obj == Objects.ELEMENT:
             if mode == Modes.ABS:
-                _translation -= self.system[name]["pos"]# - translation
+                translation -= self.system[name]["pos"]# - translation
             
             PChecks.check_elemSystem(name, self.system, self.clog, extern=True)
-            self.system[name]["transf"] = MatTransf.MatTranslate(_translation, self.system[name]["transf"])
-            self.system[name]["pos"] += _translation
+            self.system[name]["transf"] = MatTransf.MatTranslate(translation, self.system[name]["transf"])
+            self.system[name]["pos"] += translation
             
             if mode == Modes.ABS:
-                self.clog.info(f"Translated element {name} to {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated element {name} to {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
             else:
-                self.clog.info(f"Translated element {name} by {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated element {name} by {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
         
         elif obj == Objects.GROUP:
             if mode == Modes.ABS:
-                _translation -= self.groups[name]["pos"]# - translation
+                translation -= self.groups[name]["pos"]# - translation
             
             PChecks.check_groupSystem(name, self.groups, self.clog, extern=True)
             for elem in self.groups[name]["members"]:
-                self.system[elem]["transf"] = MatTransf.MatTranslate(_translation, self.system[elem]["transf"])
-                self.system[elem]["pos"] += _translation
+                self.system[elem]["transf"] = MatTransf.MatTranslate(translation, self.system[elem]["transf"])
+                self.system[elem]["pos"] += translation
             
-            self.groups[name]["pos"] += _translation
+            self.groups[name]["pos"] += translation
             
             if mode == Modes.ABS:
-                self.clog.info(f"Translated group {name} to {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated group {name} to {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
             
             else:
-                self.clog.info(f"Translated group {name} by {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated group {name} by {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
 
         elif obj == Objects.FRAME:
             if mode == Modes.ABS:
-                _translation -= self.frames[name].pos# - translation
+                translation -= self.frames[name].pos# - translation
             
             PChecks.check_frameSystem(name, self.frames, self.clog, extern=True)
             
 
-            self.frames[name].transf = MatTransf.MatTranslate(_translation)
+            self.frames[name].transf = MatTransf.MatTranslate(translation)
             _fr = BTransf.transformRays(self.frames[name])
             self.frames[name] = self.copyObj(_fr)
-            self.frames[name].pos += _translation
+            self.frames[name].pos += translation
             
             if mode == Modes.ABS:
-                self.clog.info(f"Translated frame {name} to {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated frame {name} to {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
             else:
-                self.clog.info(f"Translated frame {name} by {*['{:0.3e}'.format(x) for x in list(_translation)],} millimeters.")
+                self.clog.info(f"Translated frame {name} by {*['{:0.3e}'.format(x) for x in list(translation)],} millimeters.")
     
     def homeReflector(self, name : str, obj : Objects = Objects.ELEMENT, trans : bool = True, rot : bool = True):
         """!
