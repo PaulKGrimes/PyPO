@@ -53,6 +53,8 @@ For the electric component of the field, this is given by:
 
 $$ \mathbf{E}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{J}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{M}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
 
+And  for the magnetic component
+
 $$ \mathbf{H}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{M}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{J}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
 
 
