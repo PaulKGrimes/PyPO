@@ -51,24 +51,19 @@ integrating over the current distribution induced on the scatterer surface.
 
 For the electric component of the field, this is given by:
 
-$$ \mathbf{E}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{J}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{M}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
+$$ \mathbf{E}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_s}) \cdot \mathbf{J}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{M}(\mathbf{r_s}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s $$
 
-$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg\{ Z \Bigg[J \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{i}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$
+And for the magnetic component
 
-And  for the magnetic component
-
-$$ \mathbf{H}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{M}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{J}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
-
-
-$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg\{ \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg]  + \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$
+$$ \mathbf{H}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_s}) \cdot \mathbf{M}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{J}(\mathbf{r_s}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s $$
 
 where:
 
-\f$\mathbf{r}_q\f$ is a point on the source scatterer.
+\f$\mathbf{r}_s\f$ is a point on the source scatterer.
 
 \f$S\f$ is the source scatterer to be integrated over.
 
-\f$d s_q\f$ is an area element of the source scatterer surface centered at \f$\mathbf{r}_q\f$
+\f$d s_q\f$ is an area element of the source scatterer surface centered at \f$\mathbf{r}_s\f$
 
 \f$k = \frac{2 \pi c}{n \lambda}\f$ is the wave number.
 
@@ -76,17 +71,26 @@ where:
 
 \f$G = \frac{e^{-i k R}}{4 \pi R}\f$ is the freespace Green's function
 
-\f$R = |\mathbf{r_q} - \mathbf{r}|\f$ is the distance between the observation point and the point on the source scatterer.
+\f$\mathbf{R} = \mathbf{r_s} - \mathbf{r}\f$ is the vector from the target point to the source point
 
+\f$R = |\mathbf{R}| = |\mathbf{r_s} - \mathbf{r}|\f$ is the distance between the observation point and the point on the source scatterer.
+
+\f$\mathbf{\hat{R}} \f$ is the unit vector in the direction of 
+
+Which yields:
+
+$$ \mathbf{E} = \frac{k^2}{4\pi} \int_S Z \Bigg[J \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{i}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{-ikR} ds $$
+
+$$ \mathbf{H} = \frac{k^2}{4\pi} \int_S \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg]  + \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{-ikR} ds $$
 
 For backwards propagation, we change the Green's functon to \f$G_{r} = \frac{e^{i k R}}{4 \pi R}\f$, yielding:
 
-$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg\{ Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$
+$$ \mathbf{E} = \frac{k^2}{4\pi} \int_S Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{ikR} ds$$
 
-$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg\{ \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$
+$$ \mathbf{H} = \frac{k^2}{4\pi} \int_S \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{ikR} ds $$
 
 
-\section pobasics_process
+\section pobasics_process The PO Simulation Process
 
 Physical optics simulations of a system of scatterings proceeds by:
 1. A source of electrical and magnetic currents is defined¸ either directly, or from a specified \f$\mathbf{E}\f$ and \f$\mathbf{H}\f$
