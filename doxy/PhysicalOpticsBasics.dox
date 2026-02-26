@@ -89,6 +89,28 @@ $$ \mathbf{E} = \frac{k^2}{4\pi} \int_S Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1
 
 $$ \mathbf{H} = \frac{k^2}{4\pi} \int_S \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{ikR} ds $$
 
+\subsection pobasics_farfields Far fields
+
+The far field is defined by the limit
+$$\mathbf{E}_{far} = \lim_{r\rightarrow\infty} \mathbf{E}(\mathbf{r}) k r e^{ikr}$$
+
+$$\mathbf{H}_{far} = \lim_{r\rightarrow\infty} \mathbf{H}(\mathbf{r}) k r e^{ikr}$$
+
+where \f$r\f$ = \f$|\mathbf{r}|\f$.
+
+Inserting the above equations for forward propagation gives:
+
+$$ \mathbf{E}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(Z \Big(\mathbf{J} - (\mathbf{J}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) - \mathbf{\hat{r}} \times \mathbf{M} \Bigg) e^{ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$
+
+
+$$ \mathbf{H}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(\frac{1}{Z} \Big(\mathbf{M} - (\mathbf{M}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) + \mathbf{\hat{r}} \times \mathbf{J} \Bigg) e^{ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$
+
+For backward propagation, the farfield is given by:
+
+$$ \mathbf{E}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(Z \Big(\mathbf{J} - (\mathbf{J}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) + \mathbf{\hat{r}} \times \mathbf{M} \Bigg) e^{-ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$
+
+
+$$ \mathbf{H}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(\frac{1}{Z} \Big(\mathbf{M} - (\mathbf{M}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) - \mathbf{\hat{r}} \times \mathbf{J} \Bigg) e^{-ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$
 
 \section pobasics_process The PO Simulation Process
 
