@@ -155,7 +155,8 @@ public:
  * @param gs Number of cells on source surface.
  * @param gt Number of cells on target grid.
  * @param epsilon Relative electric permittivity of source surface.
- * @param t_direction Time direction (experimental!).
+ * @param t_direction Time direction. This changes the sign in the Green's function used to propagate the field.
+ *                      t_direction is -1 for forward propagation, +1 for backward
  * @param verbose Whether to print internal state info.
  */
 template <class T, class U, class V, class W>
@@ -1006,13 +1007,13 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
         if (norm_dot_R_hat < 0) {continue;}
 
         // Calculate the complex sums that appear in the integral
-        kR_inv_sum1 = kR_inv * (-j - kR_inv + j*kR_inv*kR_inv);
+        kR_inv_sum1 = kR_inv * (-j + t_direction*kR_inv + j*kR_inv*kR_inv);
         //printf("kR_inv_sum1: %.16g+%16gi\n", kR_inv_sum1.real(), kR_inv_sum1.imag()); // %s is format specifier
         
-        kR_inv_sum2 = kR_inv * (j + Three*kR_inv - Three* j * kR_inv*kR_inv);
+        kR_inv_sum2 = kR_inv * (j - t_direction*Three*kR_inv - Three*j * kR_inv*kR_inv);
         //printf("kR_inv_sum2: %.16g+%16gi\n", kR_inv_sum2.real(), kR_inv_sum2.imag()); // %s is format specifier
         
-        kR_inv_sum3 = kR_inv * (kR_inv + j);
+        kR_inv_sum3 = t_direction * kR_inv * (kR_inv + j);
         //printf("kR_inv_sum3: %.16g+%16gi\n", kR_inv_sum3.real(), kR_inv_sum3.imag()); // %s is format specifier
         
 
@@ -1026,12 +1027,12 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
         ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
         ut.ext(js, R_hat, js_cross_R);
 
-        Green = prefactor * exp(-j * k * R) * cs->area[i];
+        Green = prefactor * exp(t_direction * j * k * R) * cs->area[i];
         //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
 
         for( int n=0; n<3; n++)
         {
-            e_field[n] += (ZETA * (js[n] * kR_inv_sum1 + js_dot_R_R[n] * kR_inv_sum2) - ms_cross_R[n] * kR_inv_sum3) * Green;
+            e_field[n] += (ZETA * (js[n] * kR_inv_sum1 + js_dot_R_R[n] * kR_inv_sum2) + ms_cross_R[n] * kR_inv_sum3) * Green;
             h_field[n] += (ZETA_INV * (ms[n] * kR_inv_sum1 + ms_dot_R_R[n] * kR_inv_sum2) - js_cross_R[n] * kR_inv_sum3) * Green;
         }
         
@@ -1531,9 +1532,9 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
     std::array<std::complex<T>, 3> js;             // Electric current at source point
     std::array<std::complex<T>, 3> ms;             // Magnetic current at source point
     std::array<std::complex<T>, 3> js_dot_R_R;     // Electric currents projected on to R_hat
-    std::array<std::complex<T>, 3> ms_cross_R;     // Cross product of magnetic currents and R_hat
+    std::array<std::complex<T>, 3> R_cross_ms;     // Cross product of magnetic currents and R_hat
     std::array<std::complex<T>, 3> ms_dot_R_R;     // Magnetic currents projected on to R_hat
-    std::array<std::complex<T>, 3> js_cross_R;     // Cross product of electric currents and R_hat
+    std::array<std::complex<T>, 3> R_cross_js;     // Cross product of electric currents and R_hat
     
 
     // Return container
@@ -1561,30 +1562,30 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
         ms[2] = {currents->r2z[i], currents->i2z[i]};
 
         // Check if source point illuminates target point or not.
-        ut.dot(source_norm, R_hat, norm_dot_R_hat);
+        //ut.dot(source_norm, R_hat, norm_dot_R_hat);
         //printf("source_norm: (%.16g, %.16g, %.16g)\n", source_norm[0], source_norm[1], source_norm[2]); // %s is format specifier
         //printf("n . R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
-        if (norm_dot_R_hat < 0) {continue;}
+        //if ((norm_dot_R_hat > 0) && (t_direction < 0)) {continue;}
 
         // e-field
         ut.dot(js, R_hat, js_dot_R);
         ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
-        ut.ext(ms, R_hat, ms_cross_R);
+        ut.ext(R_hat, ms, R_cross_ms);
 
         // h-field
         ut.dot(ms, R_hat, ms_dot_R);
         ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
-        ut.ext(js, R_hat, js_cross_R);
+        ut.ext(R_hat, js, R_cross_js);
 
         ut.dot(source_point, r_hat, Rprime_dot_R_hat);
 
-        Green = prefactor * exp(-j * k * Rprime_dot_R_hat) * cs->area[i];
+        Green = -prefactor * j * exp(-t_direction * j * k * Rprime_dot_R_hat) * cs->area[i];
         //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
 
         for( int n=0; n<3; n++)
         {
-            e_field[n] += (ZETA * (js[n] - js_dot_R_R[n]) + ms_cross_R[n]) * Green;
-            h_field[n] += (ZETA_INV * (ms[n] + ms_dot_R_R[n]) - js_cross_R[n]) * Green;
+            e_field[n] += (ZETA * (js[n] - js_dot_R_R[n]) + t_direction * R_cross_ms[n]) * Green;
+            h_field[n] += (ZETA_INV * (ms[n] - ms_dot_R_R[n]) - t_direction * R_cross_ms[n]) * Green;
         }
         
     }

@@ -141,6 +141,17 @@ Calculation of fields at a point</h1>
 <p>For backwards propagation, we change the Green's functon to \(G_{r} = \frac{e^{i k R}}{4 \pi R}\), yielding:</p>
 <p>$$ \mathbf{E} = \frac{k^2}{4\pi} \int_S Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{ikR} ds$$</p>
 <p>$$ \mathbf{H} = \frac{k^2}{4\pi} \int_S \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg) e^{ikR} ds $$</p>
+<h2><a class="anchor" id="pobasics_farfields"></a>
+Far fields</h2>
+<p>The far field is defined by the limit $$\mathbf{E}_{far} = \lim_{r\rightarrow\infty} \mathbf{E}(\mathbf{r}) k r e^{ikr}$$</p>
+<p>$$\mathbf{H}_{far} = \lim_{r\rightarrow\infty} \mathbf{H}(\mathbf{r}) k r e^{ikr}$$</p>
+<p>where \(r\) = \(|\mathbf{r}|\).</p>
+<p>Inserting the above equations for forward propagation gives:</p>
+<p>$$ \mathbf{E}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(Z \Big(\mathbf{J} - (\mathbf{J}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) - \mathbf{\hat{r}} \times \mathbf{M} \Bigg) e^{ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$</p>
+<p>$$ \mathbf{H}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(\frac{1}{Z} \Big(\mathbf{M} - (\mathbf{M}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) + \mathbf{\hat{r}} \times \mathbf{J} \Bigg) e^{ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$</p>
+<p>For backward propagation, the farfield is given by:</p>
+<p>$$ \mathbf{E}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(Z \Big(\mathbf{J} - (\mathbf{J}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) + \mathbf{\hat{r}} \times \mathbf{M} \Bigg) e^{-ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$</p>
+<p>$$ \mathbf{H}_{far} = -\frac{ik^2}{4\pi} \int_S \Bigg(\frac{1}{Z} \Big(\mathbf{M} - (\mathbf{M}\cdot\mathbf{\hat{r}})\mathbf{\hat{r}}\Big) - \mathbf{\hat{r}} \times \mathbf{J} \Bigg) e^{-ik\mathbf{r}_s\cdot\mathbf{\hat{r}}} ds $$</p>
 <h1><a class="anchor" id="pobasics_process"></a>
 The PO Simulation Process</h1>
 <p>Physical optics simulations of a system of scatterings proceeds by:</p><ol type="1">
