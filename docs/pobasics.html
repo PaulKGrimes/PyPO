@@ -126,7 +126,10 @@ Calculation of fields at a point</h1>
 <p>Once the electric and magnetic currents induced at each point across the scatterer have been calculated, it is then necessary to calculated the field due to those currents at some distant point \(\mathbf{r}\). This is carried out using source representation of the field that is a solution to the Helmholtz equation for monochromatic fields in isotropic media due to a source Hertzian dipole, and integrating over the current distribution induced on the scatterer surface.</p>
 <p>For the electric component of the field, this is given by:</p>
 <p>$$ \mathbf{E}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{J}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{M}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$</p>
+<p>$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg Z \Bigg[J \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{i}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$</p>
+<p>And for the magnetic component</p>
 <p>$$ \mathbf{H}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{M}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{J}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$</p>
+<p>$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$</p>
 <p>where:</p>
 <p>\(\mathbf{r}_q\) is a point on the source scatterer.</p>
 <p>\(S\) is the source scatterer to be integrated over.</p>
@@ -135,6 +138,9 @@ Calculation of fields at a point</h1>
 <p>\(Z_m = \sqrt{\frac{\mu_r \mu_0}{\epsilon_r \epsilon_0}}\) is the impedance of the background media</p>
 <p>\(G = \frac{e^{-i k R}}{4 \pi R}\) is the freespace Green's function</p>
 <p>\(R = |\mathbf{r_q} - \mathbf{r}|\) is the distance between the observation point and the point on the source scatterer.</p>
+<p>For backwards propagation, we change the Green's functon to \(G_{r} = \frac{e^{i k R}}{4 \pi R}\), yielding:</p>
+<p>$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$</p>
+<p>$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$</p>
 <h1><a class="anchor" id="pobasics_process"></a>
 pobasics_process</h1>
 <p>Physical optics simulations of a system of scatterings proceeds by:</p><ol type="1">

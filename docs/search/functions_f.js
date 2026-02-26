@@ -35,5 +35,6 @@ var searchData=
   ['snapgroupactionform_32',['snapGroupActionForm',['../classGUI_1_1MainWindow_1_1MainWidget.html#a38d970bb0a39821b37b482d49ef63c85',1,'GUI::MainWindow::MainWidget']]],
   ['snapobj_33',['snapObj',['../group__public__api__reflmeths.html#ga21b9bb007b70be5f9de81b1ea26ffcf3',1,'PyPO::System::System']]],
   ['snell_34',['snell',['../classUtils.html#aed2261b8dbb2e2c4f016838bc2965297',1,'Utils::snell()'],['../GUtils_8h.html#a8afa876e595b9716b611638cb50ffa71',1,'snell(cuFloatComplex(&amp;cvin)[3], float(&amp;normal)[3], cuFloatComplex(&amp;out)[3]):&#160;GUtils.h'],['../GUtils_8h.html#ab05fb846b664c89fef4baca0a86504c2',1,'snell(float(&amp;vin)[3], float(&amp;normal)[3], float(&amp;out)[3]):&#160;GUtils.h']]],
-  ['snell_5ft_35',['snell_t',['../classUtils.html#a562852db4aee43e276d2ef796355aea3',1,'Utils::snell_t()'],['../GUtils_8h.html#a2d521812905e263634b9658fc398a53d',1,'snell_t():&#160;GUtils.h']]]
+  ['snell_5ft_35',['snell_t',['../classUtils.html#a562852db4aee43e276d2ef796355aea3',1,'Utils::snell_t()'],['../GUtils_8h.html#a2d521812905e263634b9658fc398a53d',1,'snell_t():&#160;GUtils.h']]],
+  ['surface_5ferror_36',['surface_error',['../formData_8py.html#a03c2af240df0fbb09dfd202eff8d4024',1,'GUI::ParameterForms::formData']]]
 ];

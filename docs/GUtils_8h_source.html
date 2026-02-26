@@ -696,26 +696,158 @@ $(document).ready(function(){initNavTree('GUtils_8h_source.html',''); initResiza
 <div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
 <div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span><span class="comment"> */</span></div>
 <div class="foldopen" id="foldopen00537" data-start="{" data-end="}">
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno"><a class="line" href="GUtils_8h.html#a2d622c64cff344e6e8f9bd8013d8c7af">  537</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a2d622c64cff344e6e8f9bd8013d8c7af">expCo</a>(cuFloatComplex z)</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno"><a class="line" href="GUtils_8h.html#adf1cb74f6f0b5b596395300757028426">  537</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#adf1cb74f6f0b5b596395300757028426">cuCexpf</a>(cuFloatComplex z)</div>
 <div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>{</div>
 <div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>    cuFloatComplex res;</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>    <span class="keywordtype">float</span> t = exp(z.x);</div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>    <span class="keywordtype">float</span> ys = sin(z.y);</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>    <span class="keywordtype">float</span> yc = cos(z.y);</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>    <span class="keywordtype">float</span> ys, yc;</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>    <span class="keywordtype">float</span> t = exp(z.x);</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>    sincosf(z.y, &amp;ys, &amp;yc);</div>
 <div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>    res.x = t*yc;</div>
 <div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>    res.y = t*ys;</div>
 <div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span> </div>
 <div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>    <span class="keywordflow">return</span> res;</div>
 <div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>}</div>
 </div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span> </div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span><span class="comment"></span> </div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span><span class="comment"> * Add scalar float to complex number.</span></div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00555" data-start="{" data-end="}">
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno"><a class="line" href="GUtils_8h.html#a24a1fdca7081c9367d485965854a4b1e">  555</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a24a1fdca7081c9367d485965854a4b1e">cuCaddSf</a>(cuFloatComplex a, <span class="keywordtype">float</span> b)</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>{</div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>    res.x = a.x + b;</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>    res.y = a.y;</div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span> </div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>}</div>
+</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span><span class="comment"></span> </div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span><span class="comment"> * Add complex number to scalar float.</span></div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00569" data-start="{" data-end="}">
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno"><a class="line" href="GUtils_8h.html#abd25bc8314aabb33a2b9e37c5e1ffd60">  569</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a24a1fdca7081c9367d485965854a4b1e">cuCaddSf</a>(<span class="keywordtype">float</span> a, cuFloatComplex b)</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>{</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>    res.x = b.x + a;</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>    res.y = b.y;</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span> </div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>}</div>
+</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span><span class="comment"></span> </div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span><span class="comment"> * Subtract scalar float from complex number.</span></div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00583" data-start="{" data-end="}">
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno"><a class="line" href="GUtils_8h.html#a1dfb731275d6e43ae543750aa6f2c615">  583</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a1dfb731275d6e43ae543750aa6f2c615">cuCsubSf</a>(cuFloatComplex a, <span class="keywordtype">float</span> b)</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>{</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>    res.x = a.x - b;</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>    res.y = a.y;</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span> </div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>}</div>
+</div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span><span class="comment"></span> </div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span><span class="comment"> * Add complex number to scalar float.</span></div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00597" data-start="{" data-end="}">
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno"><a class="line" href="GUtils_8h.html#ae0c7bfc4d1bbca85a38b6f706b59f381">  597</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a1dfb731275d6e43ae543750aa6f2c615">cuCsubSf</a>(<span class="keywordtype">float</span> a, cuFloatComplex b)</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>{</div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    res.x = a - b.x;</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>    res.y = -b.y;</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>}</div>
+</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span><span class="comment"></span> </div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span><span class="comment"> * Multiply complex number by scalar float.</span></div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00611" data-start="{" data-end="}">
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno"><a class="line" href="GUtils_8h.html#aeef5fa08e2c0f8a143c107260ebaa69f">  611</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#aeef5fa08e2c0f8a143c107260ebaa69f">cuCmulSf</a>(cuFloatComplex a, <span class="keywordtype">float</span> b)</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>{</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>    res.x = a.x*b;</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>    res.y = a.y*b;</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span> </div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>}</div>
+</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span><span class="comment"></span> </div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span><span class="comment"> * Multiply complex number by scalar float.</span></div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00625" data-start="{" data-end="}">
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno"><a class="line" href="GUtils_8h.html#a6c416bdc78281e4ee623d33ca5258f54">  625</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#aeef5fa08e2c0f8a143c107260ebaa69f">cuCmulSf</a>(<span class="keywordtype">float</span> a, cuFloatComplex b)</div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>{</div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    res.x = a*b.x;</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    res.y = a*b.y;</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span> </div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>}</div>
+</div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span><span class="comment"></span> </div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span><span class="comment"> * Divide complex number by scalar float.</span></div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00639" data-start="{" data-end="}">
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno"><a class="line" href="GUtils_8h.html#a757ba8d681b666a9720e61440a45cb61">  639</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a757ba8d681b666a9720e61440a45cb61">cuCdivSf</a>(cuFloatComplex a, <span class="keywordtype">float</span> b)</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>{</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    cuFloatComplex res;</div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>    res.x = a.x/b;</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>    res.y = a.y/b;</div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span> </div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>}</div>
+</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span><span class="comment"></span> </div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span><span class="comment">/**</span></div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span><span class="comment"> * Divide scalar by complex float.</span></div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span><span class="comment"> * @return res cuFloatComplex number.</span></div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span><span class="comment"> */</span></div>
+<div class="foldopen" id="foldopen00653" data-start="{" data-end="}">
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno"><a class="line" href="GUtils_8h.html#ae7f7747ae7a4b4ad49c59a373afad364">  653</a></span>__device__ __inline__ cuFloatComplex <a class="code hl_function" href="GUtils_8h.html#a757ba8d681b666a9720e61440a45cb61">cuCdivSf</a>(<span class="keywordtype">float</span> a, cuFloatComplex b)</div>
+<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>{</div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>    cuFloatComplex ac, res;</div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>    ac = make_cuFloatComplex(a, 0.);</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span> </div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>    res = cuCdivf(ac, b);</div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span> </div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>    <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>}</div>
+</div>
+<div class="ttc" id="aGUtils_8h_html_a1dfb731275d6e43ae543750aa6f2c615"><div class="ttname"><a href="GUtils_8h.html#a1dfb731275d6e43ae543750aa6f2c615">cuCsubSf</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex cuCsubSf(cuFloatComplex a, float b)</div><div class="ttdef"><b>Definition</b> GUtils.h:583</div></div>
 <div class="ttc" id="aGUtils_8h_html_a22f4f2be22ec5df28f429890f5880570"><div class="ttname"><a href="GUtils_8h.html#a22f4f2be22ec5df28f429890f5880570">conja</a></div><div class="ttdeci">__device__ __inline__ void conja(cuFloatComplex(&amp;cv)[3], cuFloatComplex(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:209</div></div>
+<div class="ttc" id="aGUtils_8h_html_a24a1fdca7081c9367d485965854a4b1e"><div class="ttname"><a href="GUtils_8h.html#a24a1fdca7081c9367d485965854a4b1e">cuCaddSf</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex cuCaddSf(cuFloatComplex a, float b)</div><div class="ttdef"><b>Definition</b> GUtils.h:555</div></div>
 <div class="ttc" id="aGUtils_8h_html_a2d521812905e263634b9658fc398a53d"><div class="ttname"><a href="GUtils_8h.html#a2d521812905e263634b9658fc398a53d">snell_t</a></div><div class="ttdeci">__device__ __inline__ void snell_t(float(&amp;vin)[3], float(&amp;normal)[3], float mu, float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:381</div></div>
-<div class="ttc" id="aGUtils_8h_html_a2d622c64cff344e6e8f9bd8013d8c7af"><div class="ttname"><a href="GUtils_8h.html#a2d622c64cff344e6e8f9bd8013d8c7af">expCo</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex expCo(cuFloatComplex z)</div><div class="ttdef"><b>Definition</b> GUtils.h:537</div></div>
 <div class="ttc" id="aGUtils_8h_html_a2dfc51352d5569a3f70d63d99091ae4e"><div class="ttname"><a href="GUtils_8h.html#a2dfc51352d5569a3f70d63d99091ae4e">diff</a></div><div class="ttdeci">__device__ __inline__ void diff(float(&amp;v1)[3], float(&amp;v2)[3], float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:162</div></div>
 <div class="ttc" id="aGUtils_8h_html_a32fa08aee06d4f61dc491c68131aa016"><div class="ttname"><a href="GUtils_8h.html#a32fa08aee06d4f61dc491c68131aa016">invmatVec4</a></div><div class="ttdeci">__device__ __inline__ void invmatVec4(float(&amp;mat)[16], float(&amp;cv1)[3], float(&amp;out)[3], bool vec=false)</div><div class="ttdef"><b>Definition</b> GUtils.h:509</div></div>
 <div class="ttc" id="aGUtils_8h_html_a5beb40dc060ea1c2df2955d79605bfe4"><div class="ttname"><a href="GUtils_8h.html#a5beb40dc060ea1c2df2955d79605bfe4">abs</a></div><div class="ttdeci">__device__ __inline__ void abs(float(&amp;v)[3], float &amp;out)</div><div class="ttdef"><b>Definition</b> GUtils.h:195</div></div>
 <div class="ttc" id="aGUtils_8h_html_a64f93bcbc602b9ad5a7b9b0132655eae"><div class="ttname"><a href="GUtils_8h.html#a64f93bcbc602b9ad5a7b9b0132655eae">s_mult</a></div><div class="ttdeci">__device__ __inline__ void s_mult(float(&amp;v)[3], float &amp;s, float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:268</div></div>
 <div class="ttc" id="aGUtils_8h_html_a650912669c5a77c5b971c0998ed2d203"><div class="ttname"><a href="GUtils_8h.html#a650912669c5a77c5b971c0998ed2d203">matVec4</a></div><div class="ttdeci">__device__ __inline__ void matVec4(float(&amp;mat)[16], float(&amp;cv1)[3], float(&amp;out)[3], bool vec=false)</div><div class="ttdef"><b>Definition</b> GUtils.h:481</div></div>
+<div class="ttc" id="aGUtils_8h_html_a757ba8d681b666a9720e61440a45cb61"><div class="ttname"><a href="GUtils_8h.html#a757ba8d681b666a9720e61440a45cb61">cuCdivSf</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex cuCdivSf(cuFloatComplex a, float b)</div><div class="ttdef"><b>Definition</b> GUtils.h:639</div></div>
 <div class="ttc" id="aGUtils_8h_html_a8afa876e595b9716b611638cb50ffa71"><div class="ttname"><a href="GUtils_8h.html#a8afa876e595b9716b611638cb50ffa71">snell</a></div><div class="ttdeci">__device__ __inline__ void snell(cuFloatComplex(&amp;cvin)[3], float(&amp;normal)[3], cuFloatComplex(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:336</div></div>
 <div class="ttc" id="aGUtils_8h_html_a8ef9560cf95b6226aebec0b889ef1460"><div class="ttname"><a href="GUtils_8h.html#a8ef9560cf95b6226aebec0b889ef1460">add</a></div><div class="ttdeci">__device__ __inline__ void add(float(&amp;v1)[3], float(&amp;v2)[3], float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:251</div></div>
 <div class="ttc" id="aGUtils_8h_html_a92ff772951f7fa5dad83d2f470912c37"><div class="ttname"><a href="GUtils_8h.html#a92ff772951f7fa5dad83d2f470912c37">matDiff</a></div><div class="ttdeci">__device__ __inline__ void matDiff(float(&amp;m1)[3][3], float(&amp;m2)[3][3], float(&amp;out)[3][3])</div><div class="ttdef"><b>Definition</b> GUtils.h:426</div></div>
@@ -723,6 +855,8 @@ $(document).ready(function(){initNavTree('GUtils_8h_source.html',''); initResiza
 <div class="ttc" id="aGUtils_8h_html_ab9481598dea03b38225920c01e04ec3e"><div class="ttname"><a href="GUtils_8h.html#ab9481598dea03b38225920c01e04ec3e">dyad</a></div><div class="ttdeci">__device__ __inline__ void dyad(float(&amp;v1)[3], float(&amp;v2)[3], float(&amp;out)[3][3])</div><div class="ttdef"><b>Definition</b> GUtils.h:407</div></div>
 <div class="ttc" id="aGUtils_8h_html_abf9df30b0d86b54347d7872559d3d8b7"><div class="ttname"><a href="GUtils_8h.html#abf9df30b0d86b54347d7872559d3d8b7">ext</a></div><div class="ttdeci">__device__ __inline__ void ext(float(&amp;v1)[3], float(&amp;v2)[3], float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:97</div></div>
 <div class="ttc" id="aGUtils_8h_html_ac6365a1b5589b457915196e459e9ceae"><div class="ttname"><a href="GUtils_8h.html#ac6365a1b5589b457915196e459e9ceae">normalize</a></div><div class="ttdeci">__device__ __inline__ void normalize(float(&amp;v)[3], float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:225</div></div>
+<div class="ttc" id="aGUtils_8h_html_adf1cb74f6f0b5b596395300757028426"><div class="ttname"><a href="GUtils_8h.html#adf1cb74f6f0b5b596395300757028426">cuCexpf</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex cuCexpf(cuFloatComplex z)</div><div class="ttdef"><b>Definition</b> GUtils.h:537</div></div>
+<div class="ttc" id="aGUtils_8h_html_aeef5fa08e2c0f8a143c107260ebaa69f"><div class="ttname"><a href="GUtils_8h.html#aeef5fa08e2c0f8a143c107260ebaa69f">cuCmulSf</a></div><div class="ttdeci">__device__ __inline__ cuFloatComplex cuCmulSf(cuFloatComplex a, float b)</div><div class="ttdef"><b>Definition</b> GUtils.h:611</div></div>
 <div class="ttc" id="aGUtils_8h_html_af13c9edaa1b77c7d7cb29a79d59a1614"><div class="ttname"><a href="GUtils_8h.html#af13c9edaa1b77c7d7cb29a79d59a1614">matVec</a></div><div class="ttdeci">__device__ __inline__ void matVec(float(&amp;m1)[3][3], float(&amp;v1)[3], float(&amp;out)[3])</div><div class="ttdef"><b>Definition</b> GUtils.h:445</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

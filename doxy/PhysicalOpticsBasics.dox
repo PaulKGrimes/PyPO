@@ -53,10 +53,14 @@ For the electric component of the field, this is given by:
 
 $$ \mathbf{E}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{J}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{M}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
 
+$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg\{ Z \Bigg[J \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{i}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$
+
 And  for the magnetic component
 
 $$ \mathbf{H}(\mathbf{r}) = - k Z_m \int_{S} \Big( 1 + \frac{1}{k^2}\mathbf{\nabla}\mathbf{\nabla} \Big) G(\mathbf{r}, \mathbf{r_q}) \cdot \mathbf{M}(\mathbf{r_s}) d s_q + \int_{S} \mathbf{J}(\mathbf{r_q}) \times \mathbf{\nabla} G(\mathbf{r}, \mathbf{r_q}) d s_q $$
 
+
+$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg\{ \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} - \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} + \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg]  + \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{-ikR} $$
 
 where:
 
@@ -73,6 +77,13 @@ where:
 \f$G = \frac{e^{-i k R}}{4 \pi R}\f$ is the freespace Green's function
 
 \f$R = |\mathbf{r_q} - \mathbf{r}|\f$ is the distance between the observation point and the point on the source scatterer.
+
+
+For backwards propagation, we change the Green's functon to \f$G_{r} = \frac{e^{i k R}}{4 \pi R}\f$, yielding:
+
+$$ \mathbf{E} = \frac{k^2}{4\pi} \Bigg\{ Z \Bigg[J \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{J}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] + \mathrm{M}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$
+
+$$ \mathbf{H} = \frac{k^2}{4\pi} \Bigg\{ \frac{1}{Z} \Bigg[M \Bigg( \frac{-i}{kR} + \frac{1}{(kR)^2} + \frac{j}{(kR)^3}\Bigg) + (\mathbf{M}\cdot\mathbf{\hat{R}})\mathbf{\hat{R}}\Bigg( \frac{i}{kR} - \frac{3}{(kR)^2} - \frac{3i}{(kR)^3} \Bigg)\Bigg] - \mathrm{J}\times\mathrm{\hat{R}}\Bigg(\frac{i}{kR}+\frac{1}{(kR)^2}\Bigg)\Bigg\} e^{ikR} $$
 
 
 \section pobasics_process

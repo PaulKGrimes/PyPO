@@ -61,8 +61,9 @@ var searchData=
   ['subprocessmanager_58',['SubprocessManager',['../classGUI_1_1SubprocessManager_1_1SubprocessManager.html',1,'GUI::SubprocessManager']]],
   ['subprocessmanager_2epy_59',['SubprocessManager.py',['../SubprocessManager_8py.html',1,'']]],
   ['subsystem_20for_20linux_20and_20the_20ubuntu_20linux_20os_60',['Install Windows Subsystem for Linux and the Ubuntu Linux OS',['../install.html#wsl-ubuntu',1,'']]],
-  ['symdialog_61',['SymDialog',['../classGUI_1_1Dialogs_1_1SymDialog.html',1,'GUI::Dialogs']]],
-  ['system_62',['system',['../basictut2.html#basictut2_import',1,'Importing The System'],['../basictut2.html#basictut2_internal',1,'Internal Components Of A System'],['../classPyPO_1_1System_1_1System.html',1,'PyPO.System.System'],['../basictut2.html',1,'The PyPO System']]],
-  ['system_20i_20o_20methods_63',['System I/O Methods',['../group__public__api__sysio.html',1,'']]],
-  ['system_2epy_64',['System.py',['../System_8py.html',1,'']]]
+  ['surface_5ferror_61',['surface_error',['../formData_8py.html#a03c2af240df0fbb09dfd202eff8d4024',1,'GUI::ParameterForms::formData']]],
+  ['symdialog_62',['SymDialog',['../classGUI_1_1Dialogs_1_1SymDialog.html',1,'GUI::Dialogs']]],
+  ['system_63',['system',['../basictut2.html#basictut2_import',1,'Importing The System'],['../basictut2.html#basictut2_internal',1,'Internal Components Of A System'],['../classPyPO_1_1System_1_1System.html',1,'PyPO.System.System'],['../basictut2.html',1,'The PyPO System']]],
+  ['system_20i_20o_20methods_64',['System I/O Methods',['../group__public__api__sysio.html',1,'']]],
+  ['system_2epy_65',['System.py',['../System_8py.html',1,'']]]
 ];
