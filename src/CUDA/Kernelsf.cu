@@ -226,7 +226,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
         cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
         //printf("dA              : %.16g\n", d_Ac.x);
 
-        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(con[8], make_cuFloatComplex(0, -kR)))), d_Ac);
+        Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(con[8], make_cuFloatComplex(0, kR)))), d_Ac);
         //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
         
 
