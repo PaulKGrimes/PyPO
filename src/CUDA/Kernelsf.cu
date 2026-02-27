@@ -1187,7 +1187,7 @@ void __device__ scalarfieldAtPoint(float *d_xs, float *d_ys, float *d_zs,
     float r_vec[3];
     float source_point[3];
     
-    e = con[8];
+    e = con[10];  // initialize field to 0+0j
     cuFloatComplex expo;
     cuFloatComplex cfact;
 
