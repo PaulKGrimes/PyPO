@@ -1027,11 +1027,11 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
         source_norm[1] = d_nys[i];
         source_norm[2] = d_nzs[i];
 
-        //dot(source_norm, r_hat, norm_dot_R_hat);
+        dot(source_norm, r_hat, norm_dot_R_hat);
         //printf("(x, y, z), norm_dot_R_hat      : (%.16g, %.16g, %.16g), %.16g\n", source_point[0], source_point[1], source_point[2], norm_dot_R_hat);
         
-        //if ((norm_dot_R_hat > 0) && (con[8].x < 0)) {
-        //    continue;}
+        if ((norm_dot_R_hat < 0)) {
+            continue;}
 
         // Vector calculatoins
         // e-field

@@ -1561,10 +1561,9 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
         ms[2] = {currents->r2z[i], currents->i2z[i]};
 
         // Check if source point illuminates target point or not.
-        //ut.dot(source_norm, R_hat, norm_dot_R_hat);
-        //printf("source_norm: (%.16g, %.16g, %.16g)\n", source_norm[0], source_norm[1], source_norm[2]); // %s is format specifier
-        //printf("n . R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
-        //if ((norm_dot_R_hat > 0) && (t_direction < 0)) {continue;}
+        ut.dot(source_norm, r_hat, norm_dot_R_hat);
+        //printf("norm_dot_R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
+        if ((norm_dot_R_hat < 0)) {continue;}
 
         // e-field
         ut.dot(js, r_hat, js_dot_R);
