@@ -1524,7 +1524,6 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
     // Arrays of Ts
     std::array<T, 3> source_point; // Container for xyz co-ordinates
     std::array<T, 3> source_norm;  // Container for xyz normals.
-    std::array<T, 3> R_hat;        // Unit vector between source and target points
     
     // Arrays of complex Ts
     std::array<std::complex<T>, 3> e_field;        // Electric field surface integral at point
@@ -1568,14 +1567,14 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
         //if ((norm_dot_R_hat > 0) && (t_direction < 0)) {continue;}
 
         // e-field
-        ut.dot(js, R_hat, js_dot_R);
-        ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
-        ut.ext(R_hat, ms, R_cross_ms);
+        ut.dot(js, r_hat, js_dot_R);
+        ut.s_mult(r_hat, js_dot_R, js_dot_R_R);
+        ut.ext(r_hat, ms, R_cross_ms);
 
         // h-field
-        ut.dot(ms, R_hat, ms_dot_R);
-        ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
-        ut.ext(R_hat, js, R_cross_js);
+        ut.dot(ms, r_hat, ms_dot_R);
+        ut.s_mult(r_hat, ms_dot_R, ms_dot_R_R);
+        ut.ext(r_hat, js, R_cross_js);
 
         ut.dot(source_point, r_hat, Rprime_dot_R_hat);
 
@@ -1585,7 +1584,7 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::farfieldA
         for( int n=0; n<3; n++)
         {
             e_field[n] += (ZETA * (js[n] - js_dot_R_R[n]) + t_direction * R_cross_ms[n]) * Green;
-            h_field[n] += (ZETA_INV * (ms[n] - ms_dot_R_R[n]) - t_direction * R_cross_ms[n]) * Green;
+            h_field[n] += (ZETA_INV * (ms[n] - ms_dot_R_R[n]) - t_direction * R_cross_js[n]) * Green;
         }
         
     }
