@@ -1036,43 +1036,35 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
         // Vector calculatoins
         // e-field
         dot(js, r_hat, js_dot_R);
-        //printf("js_dot_R         : %.16g+%.16gi\n", js_dot_R.x, js_dot_R.y);
         
         s_mult(r_hat, js_dot_R, js_dot_R_R);
-        //printf("js_dot_R_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_dot_R_R[0].x, js_dot_R_R[0].y, js_dot_R_R[1].x, js_dot_R_R[1].y, js_dot_R_R[2].x, js_dot_R_R[2].y);
-
-        ext(ms, r_hat, R_cross_ms);
-        //printf("ms_cross_R       : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_cross_R[0].x, ms_cross_R[0].y, ms_cross_R[1].x, ms_cross_R[1].y, ms_cross_R[2].x, ms_cross_R[2].y);
-
+        
+        ext(r_hat, ms, R_cross_ms);
 
         // h-field
         dot(ms, r_hat, ms_dot_R);
-        //printf("ms_dot_R        : %.16g+%.16gi\n", ms_dot_R.x, ms_dot_R.y);
         
         s_mult(r_hat, ms_dot_R, ms_dot_R_R);
-        //printf("ms_dot_R_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", ms_dot_R_R[0].x, ms_dot_R_R[0].y, ms_dot_R_R[1].x, ms_dot_R_R[1].y, ms_dot_R_R[2].x, ms_dot_R_R[2].y);
-
-        ext(js, r_hat, R_cross_js);
-        //printf("js_cross_R      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", js_cross_R[0].x, js_cross_R[0].y, js_cross_R[1].x, js_cross_R[1].y, js_cross_R[2].x, js_cross_R[2].y);
-
+        
+        ext(r_hat, js, R_cross_js);
+        
         cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
-        //printf("dA              : %.16g\n", d_Ac.x);
-
+        
         dot(source_point, r_hat, source_point_dot_r_hat);
 
-        // ±i  con[10]=0+0j, con[8]=-1+0j in fwd dir, con[9]=i
-        //cuCmulf(cuCaddf(con[10], con[8]), con[9])
+        // ∓k  con[8]=∓1, con[0]=k
+        //cuCmulf(con[8], con[0]);
 
-        // ±i k r'.rhat  con[0]=k
-        //cuCmulf(cuCmulf(cuCmulf(cuCaddf(con[10], con[8]), con[9]), con[0]), source_point_dot_r_hat)
+        // ∓k (-i) r'.rhat = ±ik r'.rhat 
+        //cuCmulf(cuCmulf(con[8], con[0]), make_cuFloatComplex(0, -source_point_dot_r_hat)
 
         // e^{±i k r'.rhat}
-        exp = cuCexpf(cuCmulf(cuCmulf(cuCmulf(cuCaddf(con[10], con[8]), con[9]), con[0]), make_cuFloatComplex(source_point_dot_r_hat,0)));
+        exp = cuCexpf(cuCmulf(cuCmulf(con[8], con[0]), make_cuFloatComplex(0, -source_point_dot_r_hat)));
 
-        // -1*ik^2/4π*dA*e^{±i k r'.rhat}, ik^2/4π = con[1]
-        // cuCmulf(make_cuFloatComplex(-1, 0), cuCmulf(con[1], exp))
+        // -i * k^2/4π * dA * e^{±i k r'.rhat}, k^2/4π = con[1]
+        // cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[1], exp))
 
-        Green = cuCmulf(cuCmulf(make_cuFloatComplex(-1, 0), cuCmulf(con[1], exp)), make_cuFloatComplex(d_A[i], 0));
+        Green = cuCmulf(cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[1], exp)), make_cuFloatComplex(d_A[i], 0));
         //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
 
         for( int n=0; n<3; n++)
@@ -1083,11 +1075,11 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
             // ∓(Rhat cross ms)  (con[8] = -1+0j in fwd dir)
             //cuCmulf(con[8], R_cross_ms[n]);
 
-            // (Z (js - (js.Rhat)Rhat) + Rhat x ms)
+            // (Z (js - (js.Rhat)Rhat) ∓ Rhat x ms)
             //cuCsubf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n]) );
 
-            // Z (js- (js.Rhat)Rhat) + Rhat x ms) Green
-            //cuCmulf(cuCsubf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n]) ), Green);
+            // Z (js- (js.Rhat)Rhat) ∓ Rhat x ms) Green
+            //cuCmulf(cuCaddf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n]) ), Green);
 
             e_field[n] = cuCaddf(cuCmulf(cuCaddf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n])), Green), e_field[n]);
             
