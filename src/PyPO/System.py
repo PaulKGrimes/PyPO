@@ -1500,10 +1500,10 @@ class System(object):
 
         stack = self.calcRayLen(hybridDict["fr_in"], hybridDict["fr_out"], start=hybridDict["start"])
         if hybridDict["start"] is not None:
-            expo = np.exp(1j * field.k * stack[1]) * np.sqrt(stack[0] / (2*stack[1] + stack[0])) # Initial curvature
+            expo = np.exp(-1j * field.k * stack[1]) * np.sqrt(stack[0] / (2*stack[1] + stack[0])) # Initial curvature
 
         else:
-            expo = np.exp(1j * field.k * stack[0])
+            expo = np.exp(-1j * field.k * stack[0])
 
         _comps = []
         for i in range(6):
