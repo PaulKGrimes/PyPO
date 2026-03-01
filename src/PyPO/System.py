@@ -2763,8 +2763,8 @@ class System(object):
         @param tol Tolerance for specifying when convergence has been reached.
         @param target_gridsize Size of the grid on the target to use for evaluating the accuracy.
         @param mult Multiplication in linear gridsize for each iteration.
-        @param div Number of divisions to make when subdividing a converged grid 
-        @param max_iter Maximum number of iterations before auto convergence errors
+        @param div Number of divisions to make when subdividing a converged grid .
+        @param max_iter Maximum number of times to increase grid size before error.
         
         @returns gridsize Gridsize for which solution converged.
         """
@@ -2921,13 +2921,11 @@ class System(object):
                 self.clog.work(f"Difference : {diff} at gridsize[{next_grid:d}]")
                 self.setLoggingVerbosity(False)
                 if diff < tol: 
-                    # We are still converged at this gridsize, so step down another half step
-                    # And update converged field
+                    # We are still converged at this gridsize, update converged gridsize and field
                     conv_grid = next_grid
                     conv_field = field.copy()
                 else:
-                    # This size is not converged, half the distance between this and previous
-                    # converged grid size.
+                    # This size is not converged, so update the largest nonconverged grid
                     nonconv_grid = next_grid
                     
                 d += 1
