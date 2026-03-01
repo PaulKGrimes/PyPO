@@ -2772,7 +2772,6 @@ class System(object):
         self.clog.work(f"*** Starting auto-convergence of {name_scatterer} on {name_target} *** ")
         logstate = self.verbosity
         self.setLoggingVerbosity(False)
-        gridsize = np.array([10,10])
         diff = 1e99
 
         P0 = 1e99
@@ -2864,12 +2863,14 @@ class System(object):
         # difference between steps
         init_field = self.scalarfields['_S_conv_target'].S.copy()
         
-        conv_gridsize = np.array([10, 10])
+        conv_grid = np.array([10, 10])
         
         # Run convergence in each grid direction
         for i in range(2):
             field = init_field.copy()
             n=0
+            
+            diff = 1e99
             
             self.system['_conv_scatterer']["gridsize"] = np.array([10,10])
             
@@ -2878,6 +2879,7 @@ class System(object):
                 
                 gridsize = self.system['_conv_scatterer']['gridsize'][i]*mult
                 self.system['_conv_scatterer']["gridsize"][i] = gridsize
+            
                 self.runPO(runPODict1)
                 self.runPO(runPODict2)
                 
@@ -2886,7 +2888,7 @@ class System(object):
                 diff = np.max(diff_field)/np.max(np.abs(field))
                 
                 self.setLoggingVerbosity(logstate)
-                self.clog.work(f"Difference : {diff} at gridsize[{gridsize:d}]")
+                self.clog.work(f"Axis {i:d} Step {n+1:d}: Difference {diff:.3e} at gridsize[{gridsize:d}]")
                 self.setLoggingVerbosity(False)
             
                 
@@ -2896,20 +2898,21 @@ class System(object):
             
             if n >= max_iter:
                 self.setLoggingVerbosity(logstate)
-                self.clog.error(f"Could not find converged solution for axis {i}, increase max_iter from {max_iter}")
-                self.clog.error(f"Returning 10*{mult}^{max_iter} = {gridsize}")
-                conv_gridsize[i] = gridsize
+                self.clog.error(f"Could not find converged solution for axis {i:d}, increase max_iter from {max_iter:d}")
+                self.clog.error(f"Returning 10*{mult:f}^{max_iter:d} = {gridsize:d}")
+                conv_grid[i] = gridsize
                 self.setLoggingVerbosity(False)
                 break
             
-            conv_grid = gridsize/mult
-            nonconv_grid = gridsize/mult**2
+            conv_gridsize = gridsize
+            nonconv_gridsize = gridsize/mult
             conv_field = last_field.copy()
             
             d = 0
             while d < div:
-                next_grid = int((conv_grid + nonconv_grid) / 2)
+                next_grid = int((conv_gridsize + nonconv_gridsize) / 2)
                 self.system['_conv_scatterer']["gridsize"][i] = next_grid
+            
                 self.runPO(runPODict1)
                 self.runPO(runPODict2)
                 
@@ -2918,25 +2921,25 @@ class System(object):
                 diff = np.max(diff_field)/np.max(np.abs(field))
                 
                 self.setLoggingVerbosity(logstate)
-                self.clog.work(f"Difference : {diff} at gridsize[{next_grid:d}]")
+                self.clog.work(f"Axis {i:d} Step {n + d+1:d}: Difference {diff:.3e} at gridsize[{next_grid:d}]")
                 self.setLoggingVerbosity(False)
                 if diff < tol: 
                     # We are still converged at this gridsize, update converged gridsize and field
-                    conv_grid = next_grid
+                    conv_gridsize = next_grid
                     conv_field = field.copy()
                 else:
                     # This size is not converged, so update the largest nonconverged grid
-                    nonconv_grid = next_grid
+                    nonconv_gridsize = next_grid
                     
                 d += 1
                 
-            conv_gridsize[i] = conv_grid
+            conv_grid[i] = conv_gridsize
         
         
-        self.system[name_scatterer]["gridsize"] = conv_gridsize
+        self.system[name_scatterer]["gridsize"] = conv_grid
         self.setLoggingVerbosity(logstate)
-        self.clog.result(f"Found converged solution, gridsize: {*['{:d}'.format(x) for x in list(conv_gridsize)],}")
-        return conv_gridsize
+        self.clog.result(f"Found converged solution, gridsize: {*['{:d}'.format(x) for x in list(conv_grid)],}")
+        return conv_grid
 
     
     def runGUIPO(self, runPODict : dict): #TODO: check typing
