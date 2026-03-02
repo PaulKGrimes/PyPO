@@ -249,7 +249,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
 
             for( int n=0; n<3; n++)
             {
-                // If this is an integral over an incomplete period of v, or over y/el, only add half of the first and last points
+                // If this is an integral over y/el, only add half of the first and last points
                 if ((gmode!=1) && (yv==0) || (yv==ncy-1))
                 {
                     ye_field[n] = cuCaddf(cuCmulf(make_cuFloatComplex(0.5,0), cuCmulf(cuCaddf(cuCmulf(con[4], cuCaddf(cuCmulf(js[n], kR_inv_sum1), cuCmulf(js_dot_R_R[n], kR_inv_sum2))), cuCmulf(ms_cross_R[n], kR_inv_sum3)), Green)), e_field[n]);
@@ -278,7 +278,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                 h_field[n] = cuCaddf(yh_field[n], h_field[n]);
             }
         }
-    }
+    } // End of x/u loop
 
     d_ei[0] = e_field[0];
     d_ei[1] = e_field[1];

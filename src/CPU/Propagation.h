@@ -906,9 +906,11 @@ void Propagation<T, U, V, W>::propagateScalarBeam(int start, int stop,
  * from electric and magnetic currents in sqrt{Watts}.
  * 
  * The GRASP manual cites Collin "Antenna Theory" (1969) for the derivation.
+ * See PyPO/doxy/FieldCalcDerivation_foward/backward.ipynb for our derivation.
  *
  * @param cs Pointer to reflcontainer or reflcontainerf object containing source grids.
  * @param currents Pointer to c2Bundle or c2Bundlef object containing currents on source.
+ * @param 
  * @param point_target Array of 3 double/float containing target point co-ordinate.
  *
  * @see reflcontainer
@@ -920,6 +922,11 @@ template <class T, class U, class V, class W>
 std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPoint(V *cs,
                                                                              W *currents, const std::array<T, 3> &point_target)
 {
+    int i;                         // Grid index
+    int gmode = cs->gmode;
+    int ncx = cs->ncx;
+    int ncy = cs->ncy;
+    
     // Scalars (T & complex T)
     T R;                           // Distance between source and target points
     T R_inv;                       // 1 / R
@@ -933,6 +940,7 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
     std::complex<T> kR_inv_sum1;   // Container for the first complex sum of 1/kR powers
     std::complex<T> kR_inv_sum2;   // Container for the second complex sum of 1/kR powers
     std::complex<T> kR_inv_sum3;   // Container for the third complex sum of 1/kR powers
+    std::complex<T> half = 0.5;    // Complex half
 
 
     // Arrays of Ts
@@ -945,10 +953,10 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
     // Arrays of complex Ts
     std::array<std::complex<T>, 3> e_field;        // Electric field surface integral at point
     std::array<std::complex<T>, 3> h_field;        // Magnetic field surface integral at point
+    std::array<std::complex<T>, 3> ye_field;       // Intermediate electric field due to integral over y/v
+    std::array<std::complex<T>, 3> yh_field;       // Intermediate magnetic field due to integral over y/v
     std::array<std::complex<T>, 3> js;             // Electric current at source point
     std::array<std::complex<T>, 3> ms;             // Magnetic current at source point
-    std::array<std::complex<T>, 3> k_out_ms;       // Outer product between k and ms
-    std::array<std::complex<T>, 3> k_out_js;       // Outer product between k and js
     std::array<std::complex<T>, 3> js_dot_R_R;     // Electric currents projected on to R_hat
     std::array<std::complex<T>, 3> ms_cross_R;     // Cross product of magnetic currents and R_hat
     std::array<std::complex<T>, 3> ms_dot_R_R;     // Magnetic currents projected on to R_hat
@@ -958,85 +966,118 @@ std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPo
     // Return container
     std::array<std::array<std::complex<T>, 3>, 2> e_h_field; // Return container containing e and h-fields
 
-    e_field.fill(z0);
-    h_field.fill(z0);
-
-    for(int i=0; i<gs; i++)
+    // Integrate over each source point
+    // We split the integral into two parts, with the outer loop over the 
+    // x/u axis, and the inner loop over the y/v axis
+    for(int xu=0; xu<ncx; xu++)
     {
-        source_point[0] = cs->x[i];
-        source_point[1] = cs->y[i];
-        source_point[2] = cs->z[i];
-        
-        source_norm[0] = cs->nx[i];
-        source_norm[1] = cs->ny[i];
-        source_norm[2] = cs->nz[i];
+        for (int n=0; n<3; n++) 
+        {
+            ye_field[n] = 0.0; // Intermediate electric field due to integral over y/v
+            yh_field[n] = 0.0; // Intermediate magnetic field due to integral over y/v
+        }
 
-        js[0] = {currents->r1x[i], currents->i1x[i]};
-        js[1] = {currents->r1y[i], currents->i1y[i]};
-        js[2] = {currents->r1z[i], currents->i1z[i]};
+        for(int yv=0; yv<ncy; yv++)
+        {
+            i = xu*ncx + yv;
 
-        ms[0] = {currents->r2x[i], currents->i2x[i]};
-        ms[1] = {currents->r2y[i], currents->i2y[i]};
-        ms[2] = {currents->r2z[i], currents->i2z[i]};
+            source_point[0] = cs->x[i];
+            source_point[1] = cs->y[i];
+            source_point[2] = cs->z[i];
+            
+            source_norm[0] = cs->nx[i];
+            source_norm[1] = cs->ny[i];
+            source_norm[2] = cs->nz[i];
 
-        ut.diff(point_target, source_point, R_vec);
-        ut.abs(R_vec, R);
+            js[0] = {currents->r1x[i], currents->i1x[i]};
+            js[1] = {currents->r1y[i], currents->i1y[i]};
+            js[2] = {currents->r1z[i], currents->i1z[i]};
 
-        //printf("R %.16g\n", R); // %s is format specifier
+            ms[0] = {currents->r2x[i], currents->i2x[i]};
+            ms[1] = {currents->r2y[i], currents->i2y[i]};
+            ms[2] = {currents->r2z[i], currents->i2z[i]};
 
-        R_inv = 1 / R;
+            ut.diff(point_target, source_point, R_vec);
+            ut.abs(R_vec, R);
 
-        //printf("1/R %.16g\n", R_inv); // %s is format specifier
-        
-        kR = k*R;
+            //printf("R %.16g\n", R); // %s is format specifier
 
-        //printf("kR %.16g\n", kR); // %s is format specifier
+            R_inv = 1 / R;
 
-        kR_inv = 1/kR;
+            //printf("1/R %.16g\n", R_inv); // %s is format specifier
+            
+            kR = k*R;
 
-        //printf("1/kR %.16g\n", kR_inv); // %s is format specifier
+            //printf("kR %.16g\n", kR); // %s is format specifier
 
-        ut.s_mult(R_vec, R_inv, R_hat);
+            kR_inv = 1/kR;
 
-        //printf("R_hat: (%.16g, %.16g, %.16g)\n", R_hat[0], R_hat[1], R_hat[2]); // %s is format specifier
+            //printf("1/kR %.16g\n", kR_inv); // %s is format specifier
 
-        // Check if source point illuminates target point or not.
-        ut.dot(source_norm, R_hat, norm_dot_R_hat);
-        //printf("source_norm: (%.16g, %.16g, %.16g)\n", source_norm[0], source_norm[1], source_norm[2]); // %s is format specifier
-        //printf("n . R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
-        if (norm_dot_R_hat < 0) {continue;}
+            ut.s_mult(R_vec, R_inv, R_hat);
 
-        // Calculate the complex sums that appear in the integral
-        kR_inv_sum1 = kR_inv * (-j + t_direction*kR_inv + j*kR_inv*kR_inv);
-        //printf("kR_inv_sum1: %.16g+%16gi\n", kR_inv_sum1.real(), kR_inv_sum1.imag()); // %s is format specifier
-        
-        kR_inv_sum2 = kR_inv * (j - t_direction*Three*kR_inv - Three*j * kR_inv*kR_inv);
-        //printf("kR_inv_sum2: %.16g+%16gi\n", kR_inv_sum2.real(), kR_inv_sum2.imag()); // %s is format specifier
-        
-        kR_inv_sum3 = t_direction * kR_inv * (kR_inv + j);
-        //printf("kR_inv_sum3: %.16g+%16gi\n", kR_inv_sum3.real(), kR_inv_sum3.imag()); // %s is format specifier
-        
+            //printf("R_hat: (%.16g, %.16g, %.16g)\n", R_hat[0], R_hat[1], R_hat[2]); // %s is format specifier
 
-        // e-field
-        ut.dot(js, R_hat, js_dot_R);
-        ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
-        ut.ext(ms, R_hat, ms_cross_R);
+            // Check if source point illuminates target point or not.
+            ut.dot(source_norm, R_hat, norm_dot_R_hat);
+            //printf("source_norm: (%.16g, %.16g, %.16g)\n", source_norm[0], source_norm[1], source_norm[2]); // %s is format specifier
+            //printf("n . R_hat: %.16g\n", norm_dot_R_hat); // %s is format specifier
+            if (norm_dot_R_hat < 0) {continue;}
 
-        // h-field
-        ut.dot(ms, R_hat, ms_dot_R);
-        ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
-        ut.ext(js, R_hat, js_cross_R);
+            // Calculate the complex sums that appear in the integral
+            kR_inv_sum1 = kR_inv * (-j + t_direction*kR_inv + j*kR_inv*kR_inv);
+            //printf("kR_inv_sum1: %.16g+%16gi\n", kR_inv_sum1.real(), kR_inv_sum1.imag()); // %s is format specifier
+            
+            kR_inv_sum2 = kR_inv * (j - t_direction*Three*kR_inv - Three*j * kR_inv*kR_inv);
+            //printf("kR_inv_sum2: %.16g+%16gi\n", kR_inv_sum2.real(), kR_inv_sum2.imag()); // %s is format specifier
+            
+            kR_inv_sum3 = t_direction * kR_inv * (kR_inv + j);
+            //printf("kR_inv_sum3: %.16g+%16gi\n", kR_inv_sum3.real(), kR_inv_sum3.imag()); // %s is format specifier
+            
 
-        Green = prefactor * exp(t_direction * j * k * R) * cs->area[i];
-        //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
+            // e-field
+            ut.dot(js, R_hat, js_dot_R);
+            ut.s_mult(R_hat, js_dot_R, js_dot_R_R);
+            ut.ext(ms, R_hat, ms_cross_R);
+
+            // h-field
+            ut.dot(ms, R_hat, ms_dot_R);
+            ut.s_mult(R_hat, ms_dot_R, ms_dot_R_R);
+            ut.ext(js, R_hat, js_cross_R);
+
+            Green = prefactor * exp(t_direction * j * k * R) * cs->area[i];
+            //printf("%.16g, %.16g\n", Green.real(), Green.imag()); // %s is format specifier
+
+            for( int n=0; n<3; n++)
+            {
+                // If this is an integral over y/el, only add half of the first and last points
+                if ((gmode!=1) && (yv==0) || (yv==ncy-1))
+                {
+                    ye_field[n] += half * (ZETA * (js[n] * kR_inv_sum1 + js_dot_R_R[n] * kR_inv_sum2) + ms_cross_R[n] * kR_inv_sum3) * Green;
+                    yh_field[n] += half * (ZETA_INV * (ms[n] * kR_inv_sum1 + ms_dot_R_R[n] * kR_inv_sum2) - js_cross_R[n] * kR_inv_sum3) * Green;
+                }
+                else  // add the full value of the points
+                {
+                    ye_field[n] += (ZETA * (js[n] * kR_inv_sum1 + js_dot_R_R[n] * kR_inv_sum2) + ms_cross_R[n] * kR_inv_sum3) * Green;
+                    yh_field[n] += (ZETA_INV * (ms[n] * kR_inv_sum1 + ms_dot_R_R[n] * kR_inv_sum2) - js_cross_R[n] * kR_inv_sum3) * Green;
+                }
+            }
+        } // End of y/v loop 
 
         for( int n=0; n<3; n++)
         {
-            e_field[n] += (ZETA * (js[n] * kR_inv_sum1 + js_dot_R_R[n] * kR_inv_sum2) + ms_cross_R[n] * kR_inv_sum3) * Green;
-            h_field[n] += (ZETA_INV * (ms[n] * kR_inv_sum1 + ms_dot_R_R[n] * kR_inv_sum2) - js_cross_R[n] * kR_inv_sum3) * Green;
+            if ((xu==0) || (xu=ncx-1)) // Only add half the point value
+            {
+                e_field[n] = half * ye_field[n];
+                h_field[n] = half * yh_field[n];
+            }
+            else 
+            {
+                e_field[n] = ye_field[n];
+                h_field[n] = yh_field[n];
+            }
         }
-        
-    }
+    } // End of x/u loop
 
     // Pack e and h together in single container
     e_h_field[0] = e_field;
