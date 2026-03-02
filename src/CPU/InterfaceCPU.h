@@ -64,40 +64,40 @@ extern "C"
 
     // SINGLE INTERFACE
     PYPO_DLL void propagateToGridf_JM(c2Bundlef *res, reflparamsf source, reflparamsf target,
-                         reflcontainerf *cs, reflcontainerf *ct,
-                         c2Bundlef *currents,
-                         float k, int numThreads, float epsilon,
-                         float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        c2Bundlef *currents,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 
     PYPO_DLL void propagateToGridf_EH(c2Bundlef *res, reflparamsf source, reflparamsf target,
-                         reflcontainerf *cs, reflcontainerf *ct,
-                         c2Bundlef *currents,
-                         float k, int numThreads, float epsilon,
-                         float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        c2Bundlef *currents,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 
     PYPO_DLL void propagateToGridf_JMEH(c4Bundlef *res, reflparamsf source, reflparamsf target,
-                         reflcontainerf *cs, reflcontainerf *ct,
-                         c2Bundlef *currents,
-                         float k, int numThreads, float epsilon,
-                         float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        c2Bundlef *currents,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 
     PYPO_DLL void propagateToGridf_EHP(c2rBundlef *res, reflparamsf source, reflparamsf target,
-                         reflcontainerf *cs, reflcontainerf *ct,
-                         c2Bundlef *currents,
-                         float k, int numThreads, float epsilon,
-                         float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        c2Bundlef *currents,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 
     PYPO_DLL void propagateToGridf_scalar(arrC1f *res, reflparamsf source, reflparamsf target,
-                         reflcontainerf *cs, reflcontainerf *ct,
-                         arrC1f *field,
-                         float k, int numThreads, float epsilon,
-                         float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        arrC1f *field,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 
     PYPO_DLL void propagateToFarFieldf(c2Bundlef *res, reflparamsf source, reflparamsf target,
-                                    reflcontainerf *cs, reflcontainerf *ct,
-                                    c2Bundlef *currents,
-                                    float k, int numThreads, float epsilon,
-                                    float t_direction);
+                        reflcontainerf *cs, reflcontainerf *ct,
+                        c2Bundlef *currents,
+                        float k, int numThreads, float epsilon,
+                        float t_direction);
 }
 
 #endif

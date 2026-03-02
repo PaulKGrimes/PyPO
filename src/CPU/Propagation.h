@@ -37,6 +37,9 @@ class Propagation
     int numThreads;     /**<Number of computing threads to employ.*/
     int gs;             /**<Number of cells on source surface.*/
     int gt;             /**<Number of cells on target surface.*/
+    int gmode;          /**<Grid mode of source surface */
+    int ncx;            /**<Number of cells on first axis of source grid */
+    int ncy;            /**<Number of cells on second axis of source grid */
 
     int step;           /**<Number of threads per block.*/
                       
@@ -68,7 +71,7 @@ public:
 
     std::vector<std::thread> threadPool;    /**<Vector of thread objects.*/
 
-    Propagation(T omega, int numThreads, int gs, int gt, T epsilon, T t_direction, bool verbose = false);
+    Propagation(T omega, int numThreads, int gs, int gt, int gmode, int ncx, int ncy, T epsilon, T t_direction, bool verbose = false);
 
     // Make T precision utility kit
     Utils<T> ut;    /**<Utils object for vector operations.*/
@@ -154,13 +157,16 @@ public:
  * @param numThreads Number of computing threads to employ.
  * @param gs Number of cells on source surface.
  * @param gt Number of cells on target grid.
+ * @param gmode Grid mode of source surface
+ * @param ncx Number of points on first axis of source grid
+ * @param ncy Number of points on second axis of source grid
  * @param epsilon Relative electric permittivity of source surface.
  * @param t_direction Time direction. This changes the sign in the Green's function used to propagate the field.
  *                      t_direction is -1 for forward propagation, +1 for backward
  * @param verbose Whether to print internal state info.
  */
 template <class T, class U, class V, class W>
-Propagation<T, U, V, W>::Propagation(T k, int numThreads, int gs, int gt, T epsilon, T t_direction, bool verbose)
+Propagation<T, U, V, W>::Propagation(T k, int numThreads, int gs, int gt, int gmode, int ncx, int ncy, T epsilon, T t_direction, bool verbose)
 {
     this->Three = 3.0f;
     this->PIf = 3.14159265359f;
@@ -189,6 +195,9 @@ Propagation<T, U, V, W>::Propagation(T k, int numThreads, int gs, int gt, T epsi
     this->numThreads = numThreads;
     this->gs = gs;
     this->gt = gt;
+    this->gmode = gmode;
+    this->ncx = ncx;
+    this->ncy = ncy;
 
     this->step = ceil(gt / numThreads);
 
@@ -910,7 +919,9 @@ void Propagation<T, U, V, W>::propagateScalarBeam(int start, int stop,
  *
  * @param cs Pointer to reflcontainer or reflcontainerf object containing source grids.
  * @param currents Pointer to c2Bundle or c2Bundlef object containing currents on source.
- * @param 
+ * @param gmode Grid mode of the source grid
+ * @param ncx Number of points on first axis of the source grid
+ * @param ncy Number of points on second axis of the source grid
  * @param point_target Array of 3 double/float containing target point co-ordinate.
  *
  * @see reflcontainer
@@ -920,12 +931,9 @@ void Propagation<T, U, V, W>::propagateScalarBeam(int start, int stop,
  */
 template <class T, class U, class V, class W>
 std::array<std::array<std::complex<T>, 3>, 2> Propagation<T, U, V, W>::fieldAtPoint(V *cs,
-                                                                             W *currents, const std::array<T, 3> &point_target)
+                                     W *currents, const std::array<T, 3> &point_target)
 {
     int i;                         // Grid index
-    int gmode = cs->gmode;
-    int ncx = cs->ncx;
-    int ncy = cs->ncy;
     
     // Scalars (T & complex T)
     T R;                           // Distance between source and target points

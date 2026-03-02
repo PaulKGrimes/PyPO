@@ -32,7 +32,7 @@ void propagateToGrid_JM(c2Bundle *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGrid(source, cs);
@@ -67,7 +67,7 @@ void propagateToGrid_EH(c2Bundle *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGrid(source, cs);
@@ -103,7 +103,7 @@ void propagateToGrid_JMEH(c4Bundle *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, c4Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<double, c4Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGrid(source, cs);
@@ -139,7 +139,7 @@ void propagateToGrid_EHP(c2rBundle *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, c2rBundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<double, c2rBundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGrid(source, cs);
@@ -174,8 +174,7 @@ void propagateToGrid_scalar(arrC1 *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, arrC1, reflcontainer, arrC1> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
-
+    Propagation<double, arrC1, reflcontainer, arrC1> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
     // Generate source and target grids
     generateGrid(source, cs);
     generateGrid(target, ct);
@@ -209,7 +208,7 @@ void propagateToFarField(c2Bundle *res, reflparams source, reflparams target,
                                 double k, int numThreads, double epsilon,
                                 double t_direction)
 {
-    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<double, c2Bundle, reflcontainer, c2Bundle> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGrid(source, cs);
@@ -268,8 +267,7 @@ void propagateToGridf_JM(c2Bundlef *res, reflparamsf source, reflparamsf target,
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
-
+    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
     // Generate source and target grids
     generateGridf(source, cs);
     generateGridf(target, ct);
@@ -303,7 +301,7 @@ void propagateToGridf_EH(c2Bundlef *res, reflparamsf source, reflparamsf target,
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGridf(source, cs);
@@ -339,7 +337,7 @@ void propagateToGridf_JMEH(c4Bundlef *res, reflparamsf source, reflparamsf targe
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, c4Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<float, c4Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGridf(source, cs);
@@ -375,7 +373,7 @@ void propagateToGridf_EHP(c2rBundlef *res, reflparamsf source, reflparamsf targe
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, c2rBundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<float, c2rBundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGridf(source, cs);
@@ -410,7 +408,7 @@ void propagateToGridf_scalar(arrC1f *res, reflparamsf source, reflparamsf target
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, arrC1f, reflcontainerf, arrC1f> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<float, arrC1f, reflcontainerf, arrC1f> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGridf(source, cs);
@@ -445,7 +443,7 @@ void propagateToFarFieldf(c2Bundlef *res, reflparamsf source, reflparamsf target
                                 float k, int numThreads, float epsilon,
                                 float t_direction)
 {
-    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, epsilon, t_direction);
+    Propagation<float, c2Bundlef, reflcontainerf, c2Bundlef> prop(k, numThreads, cs->size, ct->size, source.gmode, source.n_cells[0], source.n_cells[1], epsilon, t_direction);
 
     // Generate source and target grids
     generateGridf(source, cs);
