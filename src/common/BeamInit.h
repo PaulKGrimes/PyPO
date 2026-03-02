@@ -90,6 +90,33 @@ void initGauss(T gdict, U refldict, V *res_field, V *res_current);
 
 
 /** 
+ * Initialize Gaussian beam using the beam radius and radius of phase curvature definition
+ * from nfGPODict or nfGPODictf.
+ *
+ * The generated Gaussian has E-field and magnetic currents only. This _is_ what you want
+ * as a source in PO calculations.
+ * 
+ * Takes a nfGPODict or nfGPODictf and generates two c2Bundle or c2Bundlef objects, which contain the field and 
+ *      associated currents and are allocated to passed pointer arguments.
+ *
+ * @param gdict nfGPODict or nfGPODictf object from which to generate a Gaussian beam.
+ * @param refldict reflparams or reflparamsf object corresponding to surface on
+ *      which to generate the Gaussian beam.
+ * @param res_field Pointer to c2Bundle or c2Bundlef object.
+ * @param res_current Pointer to c2Bundle or c2Bundlef object.
+ *
+ * @see nfGPODict
+ * @see nfGPODictf
+ * @see reflparams
+ * @see reflparamsf
+ * @see c2Bundle
+ * @see c2Bundlef
+ */
+template<typename T, typename U, typename V, typename W, typename G>
+void initNFGauss(T gdict, U refldict, V *res_field, V *res_current);
+
+
+/** 
  * Initialize scalar Gaussian beam from GPODict or GPODictf.
  *
  * Takes a ScalarGPODict or ScalarGPODictf and generates an arrC1 or arrC1f object.
@@ -356,6 +383,127 @@ void initGauss(T gdict, U refldict, V *res_field, V *res_current)
         res_current->i1z[i] = 0;
 
         // Set H to zero
+        res_current->r2x[i] = -2*m[0].real();
+        res_current->i2x[i] = -2*m[0].imag();
+
+        res_current->r2y[i] = -2*m[1].real();
+        res_current->i2y[i] = -2*m[1].imag();
+
+        res_current->r2z[i] = -2*m[2].real();
+        res_current->i2z[i] = -2*m[2].imag();
+    }
+
+    delete reflc.x;
+    delete reflc.y;
+    delete reflc.z;
+
+    delete reflc.nx;
+    delete reflc.ny;
+    delete reflc.nz;
+
+    delete reflc.area;
+}
+
+template<typename T, typename U, typename V, typename W, typename G>
+void initNFGauss(T gdict, U refldict, V *res_field, V *res_current)
+{
+    int nTot = refldict.n_cells[0] * refldict.n_cells[1];
+
+    W reflc;
+
+    reflc.size = nTot;
+
+    reflc.x = new G[nTot];
+    reflc.y = new G[nTot];
+    reflc.z = new G[nTot];
+
+    reflc.nx = new G[nTot];
+    reflc.ny = new G[nTot];
+    reflc.nz = new G[nTot];
+
+    reflc.area = new G[nTot];
+
+    Utils<G> ut;
+
+    bool transform = true;
+    generateGrid(refldict, &reflc, transform);
+
+    // Calculate rho coordinate
+    G zRx      = M_PI * gdict.w0x*gdict.w0x * gdict.n / gdict.lam;
+    G zRy      = M_PI * gdict.w0y*gdict.w0y * gdict.n / gdict.lam;
+    
+    // Calculate k
+    G k        = 2 * M_PI / gdict.lam;
+    
+    G wzx;      
+    G wzy;     
+    G Rzx_inv;  
+    G Rzy_inv;  
+    G phizx;    
+    G phizy;    
+
+    std::complex<G> j(0, 1);
+
+    std::complex<G> field_atPoint;
+    std::array<std::complex<G>, 3> efield;
+    std::array<G, 3> n_source;
+    std::array<std::complex<G>, 3> m;
+
+    for (int i=0; i<nTot; i++)
+    {
+        wzx      = gdict.w0x * sqrt(1 + (reflc.z[i] / zRx)*(reflc.z[i] / zRx));
+        wzy      = gdict.w0y * sqrt(1 + ((reflc.z[i] - gdict.dxyz) / zRy)*((reflc.z[i] - gdict.dxyz) / zRy));
+        Rzx_inv  = (gdict.R0x + reflc.z[i]) / (gdict.R0x*gdict.R0x + reflc.z[i]*reflc.z[i] + zRx*zRx);
+        Rzy_inv  = (gdict.R0y + reflc.z[i] - gdict.dxyz) / (gdict.R0y*gdict.R0y + (reflc.z[i] - gdict.dxyz)*(reflc.z[i] - gdict.dxyz) + zRy*zRy);
+        phizx    = atan(reflc.z[i] / zRx);
+        phizy    = atan((reflc.z[i] - gdict.dxyz) / zRy);
+        
+        //field_atPoint = gdict.E0 * sqrt(2 / (M_PI * wzx * wzy)) * exp(-(reflc.x[i]/wzx)*(reflc.x[i]/wzx) - (reflc.y[i]/wzy)*(reflc.y[i]/wzy) -
+        //        j*M_PI/gdict.lam * (reflc.x[i]*reflc.x[i]*Rzx_inv + reflc.y[i]*reflc.y[i]*Rzy_inv) - j*k*reflc.z[i] + j*(phizx - phizy)*0.5);
+        
+        field_atPoint = gdict.E0 * exp(-(reflc.x[i]/wzx)*(reflc.x[i]/wzx) - (reflc.y[i]/wzy)*(reflc.y[i]/wzy) -
+                j*M_PI/gdict.lam * (reflc.x[i]*reflc.x[i]*Rzx_inv + reflc.y[i]*reflc.y[i]*Rzy_inv) - j*k*reflc.z[i] + j*(phizx - phizy)*0.5);
+        
+        efield[0] = field_atPoint * gdict.pol[0];
+        efield[1] = field_atPoint * gdict.pol[1];
+        efield[2] = field_atPoint * gdict.pol[2];
+
+        n_source[0] = reflc.nx[i];
+        n_source[1] = reflc.ny[i];
+        n_source[2] = reflc.nz[i];
+
+        ut.ext(n_source, efield, m);
+
+        res_field->r1x[i] = efield[0].real();
+        res_field->i1x[i] = efield[0].imag();
+
+        res_field->r1y[i] = efield[1].real();
+        res_field->i1y[i] = efield[1].imag();
+
+        res_field->r1z[i] = efield[2].real();
+        res_field->i1z[i] = efield[2].imag();
+
+        // Set H to zero
+        res_field->r2x[i] = 0;
+        res_field->i2x[i] = 0;
+
+        res_field->r2y[i] = 0;
+        res_field->i2y[i] = 0;
+
+        res_field->r2z[i] = 0;
+        res_field->i2z[i] = 0;
+
+        // Set electric currents to 0
+        res_current->r1x[i] = 0;
+        res_current->i1x[i] = 0;
+
+        res_current->r1y[i] = 0;
+        res_current->i1y[i] = 0;
+
+        res_current->r1z[i] = 0;
+        res_current->i1z[i] = 0;
+
+        // Fill magnetic currents
         res_current->r2x[i] = -2*m[0].real();
         res_current->i2x[i] = -2*m[0].imag();
 

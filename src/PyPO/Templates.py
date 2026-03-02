@@ -44,9 +44,9 @@ TubeRTDict = {
         "nRays"     : "Number of rays in a ray-trace ring (int)",
         "nRing"     : "Number of concentric ray-trace rings (int)",
         "angx0"     : "Opening angle in x-direction, degrees (real)",
-        "angy0"     : "Opening angle in y-direction, degrees (real)",
-        "x0"        : "Radius of outer ring along x-axis in mm (positive real)",
-        "y0"        : "Radius of outer ring along y-axis in mm (positive real)"
+        "angy0"     : "Opening angle in y-direction, default `angx0` (real)",
+        "x0"        : "Radius of outer ring along x-axis (positive real)",
+        "y0"        : "Radius of outer ring along y-axis, default `x0` (positive real)"
         }
 
 ##
@@ -60,10 +60,10 @@ TubeRTDict = {
 GRTDict = {
         "name"      : "Name of Gaussian ray-trace frame (string)",
         "lam"       : "Wavelength of Gaussian beam in mm (positive real)",
-        "n"         : "Refractive index of medium (positive real)",
+        "n"         : "Refractive index of medium, default 1.0 (positive real)",
         "nRays"     : "Number of rays in Gaussian beam (positive int)",
         "x0"        : "Beamwaist along x-axis in mm (positive real)",
-        "y0"        : "Beamwaidt along y-axis in mm (positive real)",
+        "y0"        : "Beamwaidt along y-axis in mm, default `x0` (positive real)",
         "seed"      : "Seed for rejection sampling of Gaussian beam (positive int)"
         }
 
@@ -81,11 +81,60 @@ GPODict = {
         "name"      : "Name of Gaussian beam",
         "lam"       : "Wavelength of Gaussian beam in mm (positive real)",
         "w0x"       : "Focal beamwaist of beam along x-axis in mm (positive real)",
-        "w0y"       : "Focal beamwaist of beam along y-axis in mm (positive real)",
-        "n"         : "Refractive index of medium",
-        "E0"        : "Peak amplitude (real)",
-        "dxyz"      : "Astigmatic distance between x and y focus in mm (real)",
-        "pol"       : "Polarisation of beam (Numpy array of length 3)"
+        "w0y"       : "Focal beamwaist of beam along y-axis in mm, default `w0x` (positive real)",
+        "n"         : "Refractive index of medium, default 1.0 (real)",
+        "E0"        : "Peak amplitude, default normalized to 4pi Watts in total power (real)",
+        "dxyz"      : "Astigmatic distance between x and y focus in mm, default 0.0 (real)",
+        "pol"       : "Polarisation of beam, default along x-axis (Numpy array of length 3)"
+        }
+
+##
+# Template for a Nearfield GPODict, containing parameters for constructing a Gaussian physical optics beam
+# from a beam radius and radius of phase curvature.
+# 
+# The beam is always initialised along the positive z-axis with the x phase reference at z = 0.
+# Evaluation of the beam, however, can be on an arbitrary oriented/positioned plane along the beam.
+# The beam can have elliptical contours, an arbitrary position angle and general astigmatism.
+# Note that the x phase reference is always at z = 0, and the y focus is at -dxyz, with dxyz the astigmatic distance. 
+# The template for a scalar beam is similar, except that the polarisation is not needed.
+# 
+# @ingroup public_api_templates
+nfGPODict = {
+        "name"      : "Name of Gaussian beam",
+        "lam"       : "Wavelength of Gaussian beam (positive real)",
+        "wx"        : "Radius of beam along x-axis (positive real)",
+        "wy"        : "Radius of beam along y-axis, default `wx` (positive real)",
+        "Rx"        : "Radius of phase curvature along x-axis. Set to zero for beamwaist, default 0.0 (real)",
+        "Ry"        : "Radius of phase curvature along y-axis. Set to zero for beamwaist, default `Rx` (real)",
+        "n"         : "Refractive index of medium, default 1.0 (real)",
+        "E0"        : "Peak amplitude, default normalizes power to 4pi Watts (real)",
+        "dxyz"      : "Astigmatic distance between x and y focus in mm, default 0.0 (real)",
+        "pol"       : "Polarisation of beam, default along x-axis (real Numpy array of length 3)"
+        }
+
+##
+# Template for a Farfield GPODict, containing parameters for constructing a Gaussian physical optics beam
+# from a far-field amplitude, angle, and phase center offset.
+# 
+# The beam is always initialised along the positive z-axis with the x phase reference at z = 0.
+# Evaluation of the beam, however, can be on an arbitrary oriented/positioned plane along the beam.
+# The beam can have elliptical contours, an arbitrary position angle and general astigmatism.
+# Note that the x phase reference is always at z = 0, and the y focus is at -dxyz, with dxyz the astigmatic distance. 
+# The template for a scalar beam is similar, except that the polarisation is not needed.
+# 
+# @ingroup public_api_templates
+ffGPODict = {
+        "name"          : "Name of Gaussian beam",
+        "lam"           : "Wavelength of Gaussian beam (positive real)",
+        "ang_x"         : "x beam width at given level (positive real)",
+        "ang_y"         : "y beam width at given level, default `ang_x` (positive real)",
+        "amp_x"         : "level of beam at given x-axis beam width in dB, default -3 dB (real)",
+        "amp_y"         : "level of beam at given y-axis beam width in dB, default `amp_x` (real)",
+        "phasecenter_x" : "Radius of phase curvature along x-axis. Set to zero for beamwaist, default 0.0 (real)",
+        "phasecenter_y" : "Radius of phase curvature along y-axis. Set to zero for beamwaist, default `phasecenter_y` (real)",
+        "n"             : "Refractive index of medium, default 1.0 (real)",
+        "E0"            : "Peak amplitude, default normalizes power to 4pi Watts (real)",
+        "pol"           : "Polarisation of beam, default along x-axis (real Numpy array of length 3)"
         }
 
 ##
