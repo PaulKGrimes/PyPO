@@ -2732,7 +2732,8 @@ class System(object):
         self.clog.result(f"Found converged solution, gridsize: {*['{:0.3e}'.format(x) for x in list(gridsize)],}")
         return gridsize
 
-    def convergeOnTarget(self, source_field : str, name_scatterer : str, name_target : str, tol : float = 1e-2, target_gridsize : np.ndarray = None, mult : int = 2, div : int = 3, max_iter : int = 16) -> int:
+    def convergeOnTarget(self, source_field : str, name_scatterer : str, name_target : str, tol : float = 1e-2, target_gridsize : np.ndarray = None, 
+                         min_gridsize : np.ndarray = None, mult : int = 2, div : int = 3, max_iter : int = 16) -> int:
         """!
         Calculate gridsize for which calculation converges.
         
@@ -2762,6 +2763,7 @@ class System(object):
         @param name_target Name of target surface for the next step in the propagation.
         @param tol Tolerance for specifying when convergence has been reached.
         @param target_gridsize Size of the grid on the target to use for evaluating the accuracy.
+        @param min_gridsize Size of the minimum grid on the scatterer to use.
         @param mult Multiplication in linear gridsize for each iteration.
         @param div Number of divisions to make when subdividing a converged grid .
         @param max_iter Maximum number of times to increase grid size before error.
@@ -2822,7 +2824,7 @@ class System(object):
         self.copyElement(name_target, '_conv_target')
         
         gmode = self.system['_conv_target']['gmode']
-        if target_gridsize:
+        if target_gridsize is not None:
             self.system['_conv_target']['gridsize'] = target_gridsize
         else:
             if gmode == 1: # UV grid
@@ -2834,12 +2836,15 @@ class System(object):
         self.copyElement(name_scatterer, '_conv_scatterer')
         
         # initialize test scatterer
-        if gmode == 1:
-            # V axis is ~3x larger than U axis for circular grids
-            self.system['_conv_scatterer']['gridsize'] = np.array((10, 30))
-        else:
-            self.system['_conv_scatterer']['gridsize'] = np.array((10, 10))
-        
+        if min_gridsize is None:
+            if gmode == 1:
+                # V axis is ~3x larger than U axis for circular grids
+                min_gridsize = np.array((10, 30))
+            else:
+                min_gridsize = np.array((10, 10))
+                
+        self.system['_conv_scatterer']["gridsize"] = min_gridsize
+            
         # Create PO dicts
         runPODict1 = {
                 "t_name"    : '_conv_scatterer',
@@ -2872,7 +2877,7 @@ class System(object):
             
             diff = 1e99
             
-            self.system['_conv_scatterer']["gridsize"] = np.array([10,10])
+            self.system['_conv_scatterer']["gridsize"] = min_gridsize.copy()
             
             while np.absolute(diff) > tol:
                 last_field = field.copy()
@@ -2888,7 +2893,7 @@ class System(object):
                 diff = np.max(diff_field)/np.max(np.abs(field))
                 
                 self.setLoggingVerbosity(logstate)
-                self.clog.work(f"Axis {i:d} Step {n+1:d}: Difference {diff:.3e} at gridsize[{gridsize:d}]")
+                self.clog.work(f"Axis {i:d} Step {n+1:d}: Difference {diff:.3e} at gridsize[{self.system['_conv_scatterer']["gridsize"][0]:d}, {self.system['_conv_scatterer']["gridsize"][1]:d}]")
                 self.setLoggingVerbosity(False)
             
                 
@@ -2921,7 +2926,7 @@ class System(object):
                 diff = np.max(diff_field)/np.max(np.abs(field))
                 
                 self.setLoggingVerbosity(logstate)
-                self.clog.work(f"Axis {i:d} Step {n + d+1:d}: Difference {diff:.3e} at gridsize[{next_grid:d}]")
+                self.clog.work(f"Axis {i:d} Step {n + d+1:d}: Difference {diff:.3e} at gridsize[{self.system['_conv_scatterer']["gridsize"][0]:d}, {self.system['_conv_scatterer']["gridsize"][1]:d}]")
                 self.setLoggingVerbosity(False)
                 if diff < tol: 
                     # We are still converged at this gridsize, update converged gridsize and field
