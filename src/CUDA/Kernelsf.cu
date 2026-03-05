@@ -1052,19 +1052,22 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
         
         dot(source_point, r_hat, source_point_dot_r_hat);
 
-        // ∓k  con[8]=∓1, con[0]=k
-        //cuCmulf(con[8], con[0]);
-
-        // ∓k (-i) r'.rhat = ±ik r'.rhat 
-        //cuCmulf(cuCmulf(con[8], con[0]), make_cuFloatComplex(0, -source_point_dot_r_hat)
-
         // e^{±i k r'.rhat}
-        exp = cuCexpf(cuCmulf(cuCmulf(con[8], con[0]), make_cuFloatComplex(0, -source_point_dot_r_hat)));
+        exp = cuCexpf(
+                cuCmulf( // ∓k -i r'.rh
+                    cuCmulf(con[8], con[0]), // ∓k
+                    make_cuFloatComplex(0, -source_point_dot_r_hat) // -i r'.rh
+                )
+            );
 
-        // -i * k^2/4π * dA * e^{±i k r'.rhat}, k^2/4π = con[1]
-        // cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[1], exp))
-
-        Green = cuCmulf(cuCmulf(make_cuFloatComplex(0, -1), cuCmulf(con[1], exp)), make_cuFloatComplex(d_A[i], 0));
+        // -i * k^2/4π * dA * e^{±i k r'.rhat}
+        Green = cuCmulf(
+                    cuCmulf( // -i (k²/4π e^{±i k r'.rhat})
+                        make_cuFloatComplex(0, -1), 
+                        cuCmulf(con[1], exp)  // k²/4π e^{±i k r'.rhat}
+                    ), 
+                    make_cuFloatComplex(d_A[i], 0)
+                );
         //printf("Green           : %.16g+%.16gi\n", Green.x, Green.y);
 
         for( int n=0; n<3; n++)
@@ -1081,9 +1084,33 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
             // Z (js- (js.Rhat)Rhat) ∓ Rhat x ms) Green
             //cuCmulf(cuCaddf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n]) ), Green);
 
-            e_field[n] = cuCaddf(cuCmulf(cuCaddf(cuCmulf(con[4], cuCsubf(js[n], js_dot_R_R[n])), cuCmulf(con[8], R_cross_ms[n])), Green), e_field[n]);
+            e_field[n] = cuCaddf(
+                            cuCmulf(
+                                cuCaddf(
+                                    cuCmulf(
+                                        con[4], 
+                                        cuCsubf(js[n], js_dot_R_R[n])
+                                    ), 
+                                    cuCmulf(con[8], R_cross_ms[n])
+                                ), 
+                                Green
+                            ), 
+                            e_field[n]
+                        );
             
-            h_field[n] = cuCaddf(cuCmulf(cuCsubf(cuCmulf(con[5], cuCsubf(ms[n], ms_dot_R_R[n])), cuCmulf(con[8], R_cross_js[n])), Green), h_field[n]);
+            h_field[n] = cuCaddf(
+                            cuCmulf(
+                                cuCsubf(
+                                    cuCmulf(
+                                        con[5], 
+                                        cuCsubf(ms[n], ms_dot_R_R[n])
+                                    ), 
+                                    cuCmulf(con[8], R_cross_js[n])
+                                ), 
+                                Green
+                            ), 
+                            h_field[n]
+                        );
         }
         //printf("e_field      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", e_temp[0].x, e_temp[0].y, e_temp[1].x, e_temp[1].y, e_temp[2].x, e_temp[2].y);
         //printf("h_field      : (%.16g+%.16gi, %.16g+%.16gi, %.16g+%.16gi)\n", h_temp[0].x, h_temp[0].y, h_temp[1].x, h_temp[1].y, h_temp[2].x, h_temp[2].y);
