@@ -134,7 +134,7 @@ class Units(CustomEnumTuple):
     @ingroup public_api_argopts
     """
     
-    M = (1e3, "spatial")
+    M = (1.0, "spatial")
     CM = (1e-2*M[0], "spatial")
     MM = (1e-3*M[0], "spatial")
     UM = (1e-6*M[0], "spatial")
@@ -145,8 +145,8 @@ class Units(CustomEnumTuple):
     UIN = (IN[0]*1e-6, "spatial")
     FT = (12*IN[0], "spatial")
     DEG = (1., "angular")
-    AM = (60., "angular")
-    AS = (3600., "angular")
+    AM = (1/60., "angular")
+    AS = (1/3600., "angular")
     RAD = (180/np.pi*DEG[0], "angular")
     MRAD = (RAD[0]*1e-3, "angular")
     URAD = (RAD[0]*1e-6, "angular")
