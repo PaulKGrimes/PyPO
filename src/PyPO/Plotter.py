@@ -490,6 +490,10 @@ def plotSystem(systemDict, ax, fine, cmap,norm,
                 x.append(frame.x[i])
                 y.append(frame.y[i])
                 z.append(frame.z[i])
+            
+            x = np.array(x)
+            y = np.array(y)
+            z = np.array(z)
 
             ax.plot(x/units, y/units, z/units, color=RTcolor, zorder=100, lw=0.7)
 
