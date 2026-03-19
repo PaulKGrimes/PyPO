@@ -229,7 +229,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
             // h-field
             // M.Rh
             dot(ms, R_hat, ms_dot_R);
-            
+
             // (M.Rh)Rh
             s_mult(R_hat, ms_dot_R, ms_dot_R_R);
             
@@ -1233,7 +1233,7 @@ __device__ void farfieldAtPoint(float *d_xs, float *d_ys, float *d_zs, float *d_
             for( int n=0; n<3; n++)
             {
                 de_field[n] =   cuCmulf(
-                                    cuCaddf( // Z (M - (M.rh)rh) + ∓ rh x J
+                                    cuCaddf( // Z (J - (J.rh)rh) + ∓ rh x J
                                         cuCsubf(js[n], js_dot_R_R[n]),
                                         cuCmulf(con[8], R_cross_ms[n])  // ∓ rh x M
                                     ), 
