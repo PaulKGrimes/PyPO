@@ -487,9 +487,9 @@ void initGaussBeam(T gdict, U refldict, V *res_field, V *res_current)
         // Calculate the E and H fields
         efield[0] = prefactor*expo*(kr_sum_1 + kr_sum_2*(R[0]*R[0] / (r*r)) - kr_sum_3*(R[2] / r));
         efield[1] = prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
-        efield[2] = prefactor*expo*(kr_sum_2*R[0]*R[2]/(r*r) + kr_sum_3*R[0]/r);
+        efield[2] = -prefactor*expo*(kr_sum_2*R[0]*R[2]/(r*r) + kr_sum_3*R[0]/r);
 
-        hfield[0] = prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
+        hfield[0] = -prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
         hfield[1] = prefactor*expo*(kr_sum_1 + kr_sum_2*(R[1]*R[1] / (r*r)) - kr_sum_3*(R[2] / r));
         hfield[2] = prefactor*expo*(kr_sum_2*R[1]*R[2]/(r*r) + kr_sum_3*R[1]/r);
 
