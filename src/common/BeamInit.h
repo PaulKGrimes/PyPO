@@ -474,19 +474,7 @@ void initGaussBeam(T gdict, U refldict, V *res_field, V *res_current)
 
         r = sqrt(R[0]*R[0] + R[1]*R[1] + R[2]*R[2]);
 
-        if (i == 0) {
-            printf("z coordinate : %f+%fi\n", R[2].real(), R[2].imag());
-            
-            printf("r value      : %f+%fi\n", r.real(), r.imag());
-            std::complex<G> ex = -j*k*r - k*k*gdict.w0*gdict.w0/2.0;
-            printf("exponent     : %f+%fi\n", ex.real(), ex.imag());
-        }
-
         expo = exp(-j*k*r - k*k*gdict.w0*gdict.w0/2.0);
-
-        if (i == 0) {
-            printf("exp term     : %f+%fi\n", expo.real(), expo.imag());
-        }
 
         // Calculate the 1/kr power series
         kr_inv = 1.0/(k*r);
