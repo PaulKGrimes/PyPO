@@ -91,6 +91,131 @@ __constant__ int g_t;               // Gridsize on target
  }
 
 /**
+ * Calculate the E and H field due to a current element at point on target.
+ *
+ * @param source_point Array of 3 float, containing xyz coordinates of source point.
+ * @param source_normal Array of 3 float containiing xyz components of the source point normal.
+ * @param source_J Array of 3 cuFloatComplex, containing xyz components of the source point J current.
+ * @param source_M Array of 3 cuFloatComplex, containing xyz components of the source point M current.
+ * @param target_point Array of 3 float, containing xyz coordinates of target point.
+ * @param d_ei Array of 3 cuFloatComplex, to be filled with E-field at point.
+ * @param d_hi Array of 3 cuFloatComplex, to be filled with H-field at point.
+ */
+__device__ void fieldElemAtPoint(float (&source_point)[3], float (&source_normal)[3],
+                    cuFloatComplex (&source_J)[3], cuFloatComplex (&source_M)[3],
+                    float (&target_point)[3],
+                    cuFloatComplex (&d_ei)[3], cuFloatComplex (&d_hi)[3])
+{
+    // Scalars (float & complex float)    
+    float R;                            // Distance between source and target points
+    float R_inv;                        // 1 / R
+    float kR;                           // k*R
+    float kR_inv;                       // inverse of kR
+    cuFloatComplex Green;               // Container for Green's function
+    cuFloatComplex js_dot_R;            // Container for inner products between wavevctor and electric currents
+    cuFloatComplex ms_dot_R;            // Container for inner products between wavevctor and magnetics currents
+
+    cuFloatComplex kR_inv_sum1;     // Container for the first common complex sum of 1/kR powers
+    cuFloatComplex kR_inv_sum2;     // Container for the second common complex sum of 1/kR powers
+    cuFloatComplex kR_inv_sum3;     // Container for the third common complex sum of 1/kR powers
+
+    // Arrays of floats
+    float norm_dot_R_hat;  // Source normal dotted with wavevector direction
+    float R_vec[3];        // Distance vector between source and target points
+    float R_hat[3];        // Unit distance vector
+
+    // Arrays of complex floats
+    cuFloatComplex js_dot_R_R[3];     // Electric current contribution to e-field
+    cuFloatComplex ms_dot_R_R[3];    // Magnetic current contribution to h-field
+    cuFloatComplex ms_cross_R[3];     // Outer product between ms and R_hat 
+    cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat 
+
+    diff(target_point, source_point, R_vec);
+    
+    abs(R_vec, R);
+    
+    R_inv = 1/R;
+
+    s_mult(R_vec, R_inv, R_hat);
+    
+    dot(source_normal, R_hat, norm_dot_R_hat);
+    
+    // Check for shadowing and set field to zero if shadowed, else calculate
+    if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
+        for (int n=0; n<3; n++) {
+            d_ei[n] = con[10];
+            d_hi[n] = con[10];
+        }
+    } 
+    else {
+        // Not shadowed, so calculate the field
+        kR = con[0].x * R;
+        kR_inv = 1.0f/kR;
+
+        // Calculate the complex sums that appear in the integral
+        // con[8] = ∓1 for forward and backward propagation
+        // -i/(kR) ∓ 1/(kR)² + i/(kR)³
+        kR_inv_sum1 = make_cuFloatComplex(cuCrealf(con[8])*kR_inv*kR_inv, kR_inv*(kR_inv*kR_inv - 1));
+
+        // i/(kR) ± 3/(kR)² - 3i/(kR)³
+        kR_inv_sum2 = make_cuFloatComplex(-cuCrealf(con[8])*3*kR_inv*kR_inv, kR_inv*(1 - 3*kR_inv*kR_inv));
+
+        // ∓(i/(kR) ∓ 1/(kR)²)
+        kR_inv_sum3 = cuCmulf(con[8], make_cuFloatComplex(-cuCrealf(con[8])*kR_inv*kR_inv, kR_inv));
+
+        // Vector calculations
+        // e-field
+        // J.Rh
+        dot(source_J, R_hat, js_dot_R);
+
+        // (J.Rh)Rh
+        s_mult(R_hat, js_dot_R, js_dot_R_R);
+
+        // M x Rh
+        ext(source_M, R_hat, ms_cross_R);
+
+        // h-field
+        // M.Rh
+        dot(source_M, R_hat, ms_dot_R);
+
+        // (M.Rh)Rh
+        s_mult(R_hat, ms_dot_R, ms_dot_R_R);
+
+        // j x Rh
+        ext(source_J, R_hat, js_cross_R);
+
+        // Green's function
+        // k²/(4π) e^{∓ikR}
+        Green = cuCmulf(con[1], cuCexpf(cuCmulf(con[8], make_cuFloatComplex(0, kR))));
+
+        // Target field contributions
+        for (int n; n<3; n++) {
+            d_ei[n] = cuCmulf(
+                            cuCaddf(
+                                cuCaddf(
+                                    cuCmulf(source_J[n], kR_inv_sum1), 
+                                    cuCmulf(js_dot_R_R[n], kR_inv_sum2)
+                                )
+                                , 
+                                cuCmulf(ms_cross_R[n], kR_inv_sum3)
+                            ), 
+                        Green
+                        );
+            d_hi[n] = cuCmulf(
+                            cuCsubf(
+                                cuCaddf(
+                                    cuCmulf(source_M[n], kR_inv_sum1), 
+                                    cuCmulf(ms_dot_R_R[n], kR_inv_sum2)
+                                ), 
+                                cuCmulf(js_cross_R[n], kR_inv_sum3)
+                                ),
+                            Green
+                            );
+        }
+    }
+}
+
+/**
  * Calculate total E and H field at point on target.
  *
  * @param d_xs Array containing source points x-coordinate.
@@ -121,25 +246,10 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     cuFloatComplex (&d_ei)[3], cuFloatComplex (&d_hi)[3])
 {
     int i;                // index in grids
-    // Scalars (float & complex float)    
-    float R;                            // Distance between source and target points
-    float R_inv;                        // 1 / R
-    float kR;                           // k*R
-    float kR_inv;                       // inverse of kR
-    cuFloatComplex Green;               // Container for Green's function
-    cuFloatComplex js_dot_R;            // Container for inner products between wavevctor and electric currents
-    cuFloatComplex ms_dot_R;            // Container for inner products between wavevctor and magnetics currents
-
-    cuFloatComplex kR_inv_sum1;     // Container for the first common complex sum of 1/kR powers
-    cuFloatComplex kR_inv_sum2;     // Container for the second common complex sum of 1/kR powers
-    cuFloatComplex kR_inv_sum3;     // Container for the third common complex sum of 1/kR powers
-
+    
     // Arrays of floats
     float source_point[3]; // Container for xyz co-ordinates
     float source_norm[3];  // Container for xyz source normals
-    float norm_dot_R_hat;  // Source normal dotted with wavevector direction
-    float R_vec[3];        // Distance vector between source and target points
-    float R_hat[3];        // Unit distance vector
 
     // Arrays of complex floats
     cuFloatComplex e_field[3] = {con[10], con[10], con[10]}; // Electric field on target
@@ -148,12 +258,8 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
     cuFloatComplex yh_field[3] = {con[10], con[10], con[10]}; // Intermediate magnetic field due to integral over y/v
     cuFloatComplex js[3];             // Electric current at source point
     cuFloatComplex ms[3];             // Magnetic current at source point
-    cuFloatComplex js_dot_R_R[3];     // Electric current contribution to e-field
-    cuFloatComplex ms_dot_R_R[3];    // Magnetic current contribution to h-field
-    cuFloatComplex ms_cross_R[3];     // Outer product between ms and R_hat 
-    cuFloatComplex js_cross_R[3];     // Outer product between js and R_hat 
-    cuFloatComplex e_temp[3];           // Temporary container for intermediate values
-    cuFloatComplex h_temp[3];           // Temporary container for intermediate values
+    cuFloatComplex e_di[3];           // Temporary container for intermediate values
+    cuFloatComplex h_di[3];           // Temporary container for intermediate values
 
     // Integrate over each source point
     // We split the integral into two parts, with the outer loop over the 
@@ -186,61 +292,11 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
             source_norm[1] = d_nys[i];
             source_norm[2] = d_nzs[i];
 
-
-            diff(point, source_point, R_vec);
-            
-            abs(R_vec, R);
-            
-            R_inv = 1/R;
-
-            s_mult(R_vec, R_inv, R_hat);
-            
-            dot(source_norm, R_hat, norm_dot_R_hat);
-            
-            if ((norm_dot_R_hat < 0) && (con[8].x < 0)) {
-                continue;}
-
-            kR = con[0].x * R;
-            kR_inv = 1.0f/kR;
-
-            // Calculate the complex sums that appear in the integral
-            // con[8] = ∓1 for forward and backward propagation
-            // -i/(kR) ∓ 1/(kR)² + i/(kR)³
-            kR_inv_sum1 = make_cuFloatComplex(cuCrealf(con[8])*kR_inv*kR_inv, kR_inv*(kR_inv*kR_inv - 1));
-
-            // i/(kR) ± 3/(kR)² - 3i/(kR)³
-            kR_inv_sum2 = make_cuFloatComplex(-cuCrealf(con[8])*3*kR_inv*kR_inv, kR_inv*(1 - 3*kR_inv*kR_inv));
-
-            // ∓(i/(kR) ∓ 1/(kR)²)
-            kR_inv_sum3 = cuCmulf(con[8], make_cuFloatComplex(-cuCrealf(con[8])*kR_inv*kR_inv, kR_inv));
-
-            // Vector calculations
-            // e-field
-            // J.Rh
-            dot(js, R_hat, js_dot_R);
-            
-            // (J.Rh)Rh
-            s_mult(R_hat, js_dot_R, js_dot_R_R);
-            
-            // M x Rh
-            ext(ms, R_hat, ms_cross_R);
-            
-
-            // h-field
-            // M.Rh
-            dot(ms, R_hat, ms_dot_R);
-            
-            // (M.Rh)Rh
-            s_mult(R_hat, ms_dot_R, ms_dot_R_R);
-            
-            // j x Rh
-            ext(js, R_hat, js_cross_R);
-            
-            // Green's function
+            // Area of grid element
             cuFloatComplex d_Ac = make_cuFloatComplex(d_A[i], 0.);
             
-            // k²/(4π) e^{∓ikR} dA
-            Green = cuCmulf(cuCmulf(con[1], cuCexpf(cuCmulf(con[8], make_cuFloatComplex(0, kR)))), d_Ac);
+            fieldElemAtPoint(source_point, source_norm, js, ms,
+                            point, e_di, h_di);
 
             for( int n=0; n<3; n++)
             {
@@ -252,17 +308,7 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     ye_field[n] = cuCaddf(
                                     cuCmulf(
                                         make_cuFloatComplex(0.5,0), 
-                                        cuCmulf(
-                                            cuCaddf(
-                                                cuCaddf(
-                                                    cuCmulf(js[n], kR_inv_sum1), 
-                                                    cuCmulf(js_dot_R_R[n], kR_inv_sum2)
-                                                )
-                                                , 
-                                                cuCmulf(ms_cross_R[n], kR_inv_sum3)
-                                            ), 
-                                            Green
-                                        )
+                                        e_di[n]
                                     ), 
                                     ye_field[n]
                                 )  ;
@@ -270,45 +316,19 @@ __device__ void fieldAtPoint(float *d_xs, float *d_ys, float*d_zs,
                     yh_field[n] = cuCaddf(
                                     cuCmulf(
                                         make_cuFloatComplex(0.5,0), 
-                                        cuCmulf(
-                                            cuCsubf(
-                                                cuCaddf(
-                                                    cuCmulf(ms[n], kR_inv_sum1), 
-                                                    cuCmulf(ms_dot_R_R[n], kR_inv_sum2)
-                                                ), 
-                                                cuCmulf(js_cross_R[n], kR_inv_sum3)
-                                            ), Green
-                                        )
-                                    ), yh_field[n]
+                                        h_di[n]), 
+                                    yh_field[n]
                                   );
                 }
                 else  // add the full value of the points
                 {
                     ye_field[n] = cuCaddf(
-                                    cuCmulf(
-                                        cuCaddf(
-                                            cuCaddf(
-                                                cuCmulf(js[n], kR_inv_sum1), 
-                                                cuCmulf(js_dot_R_R[n], kR_inv_sum2)
-                                            ),
-                                            cuCmulf(ms_cross_R[n], kR_inv_sum3)
-                                        ),
-                                        Green
-                                    ), 
+                                    e_di[n], 
                                     ye_field[n]
                                   );
                 
                     yh_field[n] = cuCaddf(
-                                    cuCmulf(
-                                        cuCsubf(
-                                            cuCaddf(
-                                                cuCmulf(ms[n], kR_inv_sum1), 
-                                                cuCmulf(ms_dot_R_R[n], kR_inv_sum2)
-                                            ), 
-                                            cuCmulf(js_cross_R[n], kR_inv_sum3)
-                                        ), 
-                                        Green
-                                    ), 
+                                    h_di[n], 
                                     yh_field[n]
                                   );
                 }
